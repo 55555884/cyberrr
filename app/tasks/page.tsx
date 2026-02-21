@@ -1,88 +1,85 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
-const CATEGORIES = ["ALL", "SURVEY", "OFFER", "VIDEO"];
+import { useState, useEffect } from "react";
 
 export default function TasksPage() {
-  const router = useRouter();
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("ALL");
+  const [profile, setProfile] = useState<any>(null);
+  
+  // 審査通過済みのAppID
+  const RAPIDREACH_ID = "PVnxv7sZMH2"; 
 
   useEffect(() => {
-    const verified = localStorage.getItem('worldid_verified');
-    if (!verified) { router.push('/'); return; }
-    async function fetchTasks() {
-      setLoading(true);
-      const res = await fetch(`/api/tasks`);
-      const data = await res.json();
-      setTasks(data.tasks || []);
-      setLoading(false);
+    const saved = localStorage.getItem("profile");
+    if (saved) {
+      setProfile(JSON.parse(saved));
     }
-    fetchTasks();
   }, []);
 
-  const filtered = activeCategory === "ALL" ? tasks : tasks.filter(t => t.category === activeCategory);
+  // RapidReachとの互換性を保つためのURL生成ロジック
+  const getRapidReachUrl = () => {
+    // ユーザー識別用のID（World ID認証済みならそのアドレス、なければランダム生成）
+    const userId = localStorage.getItem("worldid_verified_address") || "user_" + Math.random().toString(36).substring(7);
+    
+    let url = `https://www.rapidreach.com/u/${RAPIDREACH_ID}?user_id=${userId}`;
+    
+    if (profile) {
+      // 1. 性別の互換性変換 (RapidReach: 1=Male, 2=Female, 0=Other)
+      let genderCode = "0";
+      if (profile.gender === "男性") genderCode = "1";
+      if (profile.gender === "女性") genderCode = "2";
+
+      // 2. 生年月日の抽出 (YYYY-MM-DD から YYYY を取得)
+      const birthYear = profile.birthYear || (profile.birth ? profile.birth.split("-")[0] : "");
+
+      // URLにパラメータを連結
+      url += `&gender=${genderCode}`;
+      if (birthYear) url += `&birth_year=${birthYear}`;
+    }
+    
+    return url;
+  };
 
   return (
-    <div style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", paddingBottom: "100px" }}>
-      <div style={{ padding: "24px 16px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <img src="/logo.png" alt="CYBERRR" style={{ width: "160px", height: "32px", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button style={{ background: "#1A1A1A", border: "1px solid #252525", borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", fontSize: "16px" }}>🔔</button>
-          <button style={{ background: "#1A1A1A", border: "1px solid #252525", borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", fontSize: "16px" }}>👤</button>
+    <div className="min-h-screen bg-black text-white p-6 pb-32">
+      <header className="mb-10 pt-4">
+        <h1 className="text-3xl font-black italic tracking-tighter text-[#00ff00]">CYBERRR</h1>
+        <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest mt-1 text-glow">Premium Mission Hub</p>
+      </header>
+
+      {/* RapidReach 案件カード */}
+      <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-[2.5rem] mb-8 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 bg-[#00ff00] text-black text-[10px] font-black px-4 py-1 rounded-bl-2xl">
+          BEST MATCH
+        </div>
+        <h2 className="text-2xl font-black mb-2">アンケートを開始</h2>
+        <p className="text-zinc-500 text-sm mb-8 leading-relaxed">
+          {profile ? `プロファイル（${profile.gender} / ${profile.job}）に最適な案件を読み込みました。` : "読み込み中..."}
+        </p>
+        
+        <a 
+          href={getRapidReachUrl()} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="block w-full bg-[#00ff00] text-black py-5 rounded-2xl font-black text-center text-sm active:scale-95 transition-all shadow-[0_0_30px_rgba(0,255,0,0.2)]"
+        >
+          ミッションサイトへ移動
+        </a>
+      </div>
+
+      <div className="space-y-4 opacity-40 select-none">
+        <h3 className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em] pl-2">Daily Quests</h3>
+        <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-3xl flex justify-between items-center italic">
+          <span className="text-zinc-500 font-bold">More tasks coming soon...</span>
         </div>
       </div>
-      <div style={{ padding: "20px 16px 0" }}>
-        <h2 style={{ fontSize: "26px", fontWeight: "800", color: "#FFFFFF", margin: "0 0 4px", letterSpacing: "-0.5px" }}>AVAILABLE TASKS</h2>
-        <p style={{ fontSize: "12px", color: "#555", margin: "0 0 20px" }}>Complete tasks to earn USDC instantly</p>
-        <div style={{ display: "flex", gap: "8px", marginBottom: "20px", overflowX: "auto" }}>
-          {CATEGORIES.map(cat => (
-            <button key={cat} onClick={() => setActiveCategory(cat)} style={{ padding: "7px 16px", borderRadius: "999px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: "700", whiteSpace: "nowrap", backgroundColor: activeCategory === cat ? "#06C755" : "#1A1A1A", color: activeCategory === cat ? "#FFFFFF" : "#555" }}>
-              {cat}
-            </button>
-          ))}
+
+      {/* ナビゲーション */}
+      <nav className="fixed bottom-8 left-6 right-6">
+        <div className="bg-zinc-900/80 backdrop-blur-3xl border border-zinc-800/50 p-2 rounded-full flex justify-around items-center">
+          <button className="bg-[#00ff00] text-black px-8 py-3 rounded-full text-xs font-black shadow-lg">TASKS</button>
+          <button className="text-zinc-500 text-xs font-black px-8 py-3">WALLET</button>
+          <button className="text-zinc-500 text-xs font-black px-8 py-3">PROFILE</button>
         </div>
-        {loading && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {[1,2,3].map(i => (
-              <div key={i} style={{ backgroundColor: "#141414", borderRadius: "20px", padding: "20px", border: "1px solid #1E1E1E" }}>
-                <div style={{ height: "12px", backgroundColor: "#222", borderRadius: "6px", width: "40%", marginBottom: "12px" }} />
-                <div style={{ height: "18px", backgroundColor: "#222", borderRadius: "6px", width: "70%", marginBottom: "12px" }} />
-                <div style={{ height: "12px", backgroundColor: "#222", borderRadius: "6px", width: "30%" }} />
-              </div>
-            ))}
-          </div>
-        )}
-        {!loading && filtered.length === 0 && (
-          <div style={{ textAlign: "center", padding: "60px 20px" }}>
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>📭</div>
-            <p style={{ color: "#555", fontSize: "14px", fontWeight: "600" }}>No tasks available right now</p>
-          </div>
-        )}
-        {!loading && filtered.map((task) => (
-          <div key={task.id} onClick={() => router.push("/survey")} style={{ backgroundColor: "#141414", padding: "20px", borderRadius: "20px", cursor: "pointer", border: "1px solid #1E1E1E", marginBottom: "10px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-              <span style={{ fontSize: "10px", fontWeight: "700", color: "#06C755", border: "1px solid #06C75533", borderRadius: "999px", padding: "3px 10px", backgroundColor: "#06C75510" }}>{task.category || "SURVEY"}</span>
-              <span style={{ fontSize: "18px", fontWeight: "800", color: "#06C755" }}>{task.reward}</span>
-            </div>
-            <h3 style={{ margin: "0 0 8px", fontSize: "15px", fontWeight: "700", color: "#FFFFFF" }}>{task.title}</h3>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <span style={{ fontSize: "11px", color: "#444" }}>⏱ {task.duration || "5 min"}</span>
-              <span style={{ fontSize: "11px", color: "#444" }}>★ {task.rating || "4.5"}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={{ position: "fixed", bottom: "16px", left: "16px", right: "16px", backgroundColor: "#141414", borderRadius: "24px", padding: "14px 24px", display: "flex", justifyContent: "space-around", border: "1px solid #222" }}>
-        {[{icon:"⊞",label:"Tasks",path:"/tasks",active:true},{icon:"🔍",label:"Search",path:"/tasks",active:false},{icon:"📋",label:"History",path:"/history",active:false},{icon:"👤",label:"Profile",path:"/",active:false}].map(item => (
-          <button key={item.label} onClick={() => router.push(item.path)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", border: "none", background: "none", cursor: "pointer" }}>
-            <span style={{ fontSize: "18px" }}>{item.icon}</span>
-            <span style={{ fontSize: "10px", fontWeight: "600", color: item.active ? "#06C755" : "#444" }}>{item.label}</span>
-          </button>
-        ))}
-      </div>
+      </nav>
     </div>
   );
 }
