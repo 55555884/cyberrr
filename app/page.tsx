@@ -1,46 +1,40 @@
 "use client";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { useState } from "react";
 import { IDKit, ISuccessResult } from "@worldcoin/idkit";
 
 export default function AuthPage() {
-  const router = useRouter();
+  const [proof, setProof] = useState<string | null>(null);
 
   const handleVerify = async (result: ISuccessResult) => {
-    console.log("Verified Proof:", result);
-  };
-
-  const onSuccess = () => {
-    // 認証成功時のみ /tasks へ移動
-    router.push("/tasks");
+    // 認証が通ると、ここですごく長い「暗号（Proof）」が届きます
+    setProof(JSON.stringify(result, null, 2));
   };
 
   return (
-    <div style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px" }}>
-      <div style={{ marginBottom: "32px" }}>
-        <Image src="/名称_未_設定 - 2026-02-19T155633.450 (1) (1).png" alt="Logo" width={120} height={120} priority style={{ borderRadius: "24px" }} />
-      </div>
-
-      <IDKit
-        app_id="app_558e35674ed6ecbb3aaebfeb9f0b6540" 
-        action="verify-human"
-        onSuccess={onSuccess}
-        handleVerify={handleVerify}
-        verification_level={"orb" as any}
-      >
-        {({ open }) => (
-          <button 
-            onClick={open} 
-            style={{ width: "100%", maxWidth: "340px", padding: "18px", borderRadius: "99px", background: "linear-gradient(135deg, #06C755, #04a344)", color: "#FFFFFF", fontWeight: "700", border: "none", cursor: "pointer" }}
-          >
-            ◎ Verify with World ID
-          </button>
-        )}
-      </IDKit>
-
-      <div style={{ position: "absolute", bottom: "40px", color: "#333", fontSize: "10px", fontWeight: "bold" }}>
-        POWERED BY WORLDCOIN
-      </div>
+    <div style={{ backgroundColor: "#0A0A0A", color: "white", minHeight: "100vh", padding: "20px" }}>
+      <h1>CYBERRR Mini App</h1>
+      
+      {!proof ? (
+        <IDKit
+          app_id="app_558e35674ed6ecbb3aaebfeb9f0b6540" 
+          action="verify-human"
+          onSuccess={() => console.log("Success!")}
+          handleVerify={handleVerify}
+          verification_level={"orb" as any}
+        >
+          {({ open }) => (
+            <button onClick={open} style={{ padding: "20px", background: "#06C755", borderRadius: "10px", color: "white" }}>
+              人間であることを証明する
+            </button>
+          )}
+        </IDKit>
+      ) : (
+        <div style={{ wordBreak: "break-all", fontSize: "12px", background: "#222", padding: "10px" }}>
+          <h3>✅ 認証成功！</h3>
+          <p>あなたの認証証拠（Proof）:</p>
+          <code>{proof}</code>
+        </div>
+      )}
     </div>
   );
 }
