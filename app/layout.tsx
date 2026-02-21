@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
-import MiniKitProvider from "@/components/MiniKitProvider"; // フォルダ構成ミスを修正済み
+import MiniKitProvider from "@/components/MiniKitProvider"; // エイリアスを使用
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "CYBERRR | Official",
-  description: "Native Login with World ID",
-};
+export const metadata: Metadata = { title: "CYBERRR" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
-      <body className="antialiased">
+      <body>
         <MiniKitProvider>{children}</MiniKitProvider>
       </body>
     </html>
