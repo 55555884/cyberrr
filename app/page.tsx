@@ -1,40 +1,39 @@
 "use client";
-import { useState } from "react";
-import { IDKit, ISuccessResult } from "@worldcoin/idkit";
+import { useEffect, useState } from "react";
+// Mini App 用のライブラリを使用する形に変更
+import { MiniKit } from "@worldcoin/minikit-js";
 
 export default function AuthPage() {
-  const [proof, setProof] = useState<string | null>(null);
+  const [status, setStatus] = useState("未認証");
 
-  const handleVerify = async (result: ISuccessResult) => {
-    // 認証が通ると、ここですごく長い「暗号（Proof）」が届きます
-    setProof(JSON.stringify(result, null, 2));
+  const handleVerify = async () => {
+    if (!MiniKit.isInstalled()) {
+      setStatus("World App 内で開いてください");
+      return;
+    }
+
+    // Mini App 特有の認証呼び出し
+    const { finalPayload } = await MiniKit.commands.verify({
+      action: "verify-human",
+      signal: "my_signal",
+      verification_level: "orb", // 本物の人間のみ
+    });
+
+    if (finalPayload.status === "error") {
+      setStatus("認証エラー: " + finalPayload.details);
+    } else {
+      setStatus("✅ 認証成功！証拠を取得しました");
+      console.log(finalPayload);
+    }
   };
 
   return (
-    <div style={{ backgroundColor: "#0A0A0A", color: "white", minHeight: "100vh", padding: "20px" }}>
+    <div style={{ backgroundColor: "#0A0A0A", color: "white", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
       <h1>CYBERRR Mini App</h1>
-      
-      {!proof ? (
-        <IDKit
-          app_id="app_558e35674ed6ecbb3aaebfeb9f0b6540" 
-          action="verify-human"
-          onSuccess={() => console.log("Success!")}
-          handleVerify={handleVerify}
-          verification_level={"orb" as any}
-        >
-          {({ open }) => (
-            <button onClick={open} style={{ padding: "20px", background: "#06C755", borderRadius: "10px", color: "white" }}>
-              人間であることを証明する
-            </button>
-          )}
-        </IDKit>
-      ) : (
-        <div style={{ wordBreak: "break-all", fontSize: "12px", background: "#222", padding: "10px" }}>
-          <h3>✅ 認証成功！</h3>
-          <p>あなたの認証証拠（Proof）:</p>
-          <code>{proof}</code>
-        </div>
-      )}
+      <p>ステータス: {status}</p>
+      <button onClick={handleVerify} style={{ padding: "20px", backgroundColor: "#06C755", borderRadius: "99px", color: "white", border: "none" }}>
+        World ID で認証
+      </button>
     </div>
   );
 }
