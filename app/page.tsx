@@ -1,13 +1,10 @@
 "use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import { MiniKit } from "@worldcoin/minikit-js";
 
 export default function AuthPage() {
-  const router = useRouter();
+  const [debugData, setDebugData] = useState<string>("");
 
-  // 1. ミニアプリの初期化（これが必須！）
   useEffect(() => {
     if (typeof window !== "undefined") {
       MiniKit.install();
@@ -16,43 +13,41 @@ export default function AuthPage() {
 
   const handleVerify = async () => {
     try {
-      if (!MiniKit.isInstalled()) {
-        alert("World App内で開いてください。");
-        return;
-      }
-
-      // 2. 認証コマンドの実行
+      setDebugData("認証リクエスト送信中...");
+      
       const { finalPayload } = await MiniKit.commands.verify({
-        action: "verify-human", // ポータルで設定したAction ID
-        signal: "user_session_" + Date.now(), // 毎回変えることでキャッシュを防止
-        verification_level: "orb", // 本物のOrb認証者のみ
+        action: "verify-human",
+        signal: "debug_session_" + Date.now(),
+        verification_level: "orb", 
       });
 
-      // 3. 結果の厳格チェック
       if (finalPayload.status === "success") {
-        console.log("Verified!");
-        router.push("/tasks"); // 成功時のみ遷移
+        // 認証に成功した証拠（Proof）を画面に表示する
+        setDebugData("✅ 認証成功！\nデータ: " + JSON.stringify(finalPayload, null, 2));
       } else {
-        // 失敗・キャンセル時は何もせず、エラー詳細をログに出す
-        console.error("Verification failed:", finalPayload.details);
+        setDebugData("❌ 認証失敗またはキャンセル\n詳細: " + finalPayload.details);
       }
     } catch (error) {
-      console.error("Auth error:", error);
+      setDebugData("⚠️ システムエラー: " + error);
     }
   };
 
   return (
-    <div style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px" }}>
-      <div style={{ marginBottom: "32px" }}>
-        <Image src="/名称_未_設定 - 2026-02-19T155633.450 (1) (1).png" alt="Logo" width={120} height={120} priority style={{ borderRadius: "24px" }} />
-      </div>
-
+    <div style={{ backgroundColor: "#0A0A0A", color: "white", minHeight: "100vh", padding: "20px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <h1 style={{ fontSize: "20px", marginBottom: "20px" }}>World ID Debugger</h1>
+      
       <button 
         onClick={handleVerify} 
-        style={{ width: "100%", maxWidth: "340px", padding: "18px", borderRadius: "99px", background: "linear-gradient(135deg, #06C755, #04a344)", color: "#FFFFFF", fontWeight: "900", border: "none", cursor: "pointer" }}
+        style={{ padding: "15px 30px", background: "#06C755", borderRadius: "99px", color: "white", fontWeight: "bold", border: "none", marginBottom: "20px" }}
       >
-        ◎ Verify with World ID
+        認証テスト実行
       </button>
+
+      {debugData && (
+        <div style={{ background: "#1A1A1A", padding: "15px", borderRadius: "10px", width: "100%", wordBreak: "break-all" }}>
+          <pre style={{ fontSize: "12px", whiteSpace: "pre-wrap" }}>{debugData}</pre>
+        </div>
+      )}
     </div>
   );
 }
