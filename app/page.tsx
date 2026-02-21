@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { IDKitWidget } from "@worldcoin/idkit";
+import { IDKitRequestWidget } from "@worldcoin/idkit";
 import { useState } from "react";
 
 export default function AuthPage() {
