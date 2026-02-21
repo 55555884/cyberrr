@@ -7,17 +7,31 @@ import { useState, useEffect } from "react";
 export default function AuthPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    if (MiniKit.isInstalled()) {
+    const checkStatus = () => {
       const profile = localStorage.getItem("profile");
-      if (profile) {
+      const isVerified = localStorage.getItem("worldid_verified");
+
+      // 1. すべて完了しているならタスク画面へ
+      if (profile && (isVerified || MiniKit.isInstalled())) {
         router.replace("/tasks");
-      } else {
+      } 
+      // 2. 認証済みだがプロフィールがまだならアンケートへ
+      else if (!profile && (isVerified || MiniKit.isInstalled())) {
         router.replace("/profile/setup");
+      } 
+      // 3. 未認証ならチェックを終了してログインボタンを表示
+      else {
+        setIsChecking(false);
       }
+    };
+
+    if (typeof window !== "undefined") {
+      checkStatus();
     }
-  }, []);
+  }, [router]);
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -27,8 +41,11 @@ export default function AuthPage() {
         nonce,
         statement: "Sign in to CYBERRR",
       });
+
       if (finalPayload.status === "success") {
+        // 認証成功フラグを保存
         localStorage.setItem("worldid_verified", "true");
+        // 次のステップ（アンケート）へ強制移動
         router.replace("/profile/setup");
       }
     } catch (error) {
@@ -37,6 +54,9 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
+
+  // チェック中は何も表示しない（画面のチラつき防止）
+  if (isChecking) return null;
 
   return (
     <div style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px" }}>
