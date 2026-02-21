@@ -5,7 +5,7 @@ import { ReactNode, useEffect } from "react";
 export default function MiniKitProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window !== "undefined") {
-      MiniKit.install();
+      MiniKit.install(); // World Appとの通信を開始します
     }
   }, []);
 
