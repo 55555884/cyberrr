@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 // インポートパスを現在のフォルダ構成（./components/...）に合わせて修正しました
-import MiniKitProvider from "./components/MiniKitProvider";
+import MiniKitProvider from "../.next/components/MiniKitProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
