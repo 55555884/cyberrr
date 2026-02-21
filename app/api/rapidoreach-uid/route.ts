@@ -3,38 +3,35 @@ import crypto from 'crypto';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  
+  // ユーザー識別子を確実に取得
   const rawId = searchParams.get('userId') || 'user_guest';
+  const gender = searchParams.get('gender') || ''; 
+  const birthYear = searchParams.get('birthYear') || '';
+  
+  // Vercelに設定した環境変数を取得
+  const appId = process.env.RAPIDOREACH_APP_ID || 'PVnxv7sZMH2';
+  const appKey = process.env.RAPIDOREACH_APP_KEY; 
 
-  // 環境変数の読み込み
-  const appId = process.env.RAPIDOREACH_APP_ID;
-  const appKey = process.env.RAPIDOREACH_APP_KEY; // ここが API Key であること
-
-  if (!appId || !appKey) {
-    return NextResponse.json({ error: "Config Missing" }, { status: 500 });
+  if (!appKey) {
+    return NextResponse.json({ error: "API_KEY_MISSING" }, { status: 500 });
   }
 
-  // 1. 署名の生成: md5(userId-appId-appKey)
-  const signatureBase = `${rawId}-${appId}-${appKey}`;
-  const checksum = crypto.createHash('md5').update(signatureBase).digest('hex');
+  // 1. 署名の作成 (userId-appId-appKey)
+  const checksum = crypto.createHash('md5').update(`${rawId}-${appId}-${appKey}`).digest('hex');
   
-  // 2. 最終的な UID (userId-appId-checksum)
-  const finalUid = `${rawId}-${appId}-${checksum}`;
-  
-  // 3. 案件取得用 URL (日本固定)
-  const targetUrl = `https://api.rapidoreach.com/v1/surveys?userId=${finalUid}&lang=jp&country=JP`;
+  // 2. 本番URLの構築 (署名入り)
+  let finalUrl = `https://www.rapidoreach.com/ofw/?userId=${rawId}-${appId}-${checksum}`;
 
-  try {
-    const res = await fetch(targetUrl, {
-      headers: {
-        // サーバーサイド fetch 時のボット判定を回避
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-      cache: 'no-store'
-    });
-
-    const data = await res.json();
-    return NextResponse.json(data);
-  } catch (e) {
-    return NextResponse.json({ error: "API Connection Failed" }, { status: 500 });
+  // 3. 属性情報の付与 (互換性維持)
+  if (gender) {
+    const gCode = gender === '男性' ? '1' : gender === '女性' ? '2' : '0';
+    finalUrl += `&gender=${gCode}`;
   }
+  if (birthYear) finalUrl += `&birth_year=${birthYear}`;
+  
+  // 国と言語を固定
+  finalUrl += `&lang=jp&country=JP`;
+
+  return NextResponse.json({ url: finalUrl });
 }
