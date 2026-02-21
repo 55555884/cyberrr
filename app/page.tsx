@@ -1,53 +1,42 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { MiniKit } from "@worldcoin/minikit-js";
+import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
-  const [debugData, setDebugData] = useState<string>("");
+  const router = useRouter();
 
+  // 1. アプリ起動時にMiniKitを初期化
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      MiniKit.install();
-    }
+    MiniKit.install();
   }, []);
 
-  const handleVerify = async () => {
-    try {
-      setDebugData("認証リクエスト送信中...");
-      
-      const { finalPayload } = await MiniKit.commands.verify({
-        action: "verify-human",
-        signal: "debug_session_" + Date.now(),
-        verification_level: "orb", 
-      });
+  const handleSignIn = async () => {
+    // 2. 「ログイン」ポップアップを呼び出す
+    const { finalPayload } = await MiniKit.commands.signIn({
+      nonce: crypto.randomUUID(), // セキュリティ用のランダムな文字
+      expirationTime: new Date(Date.now() + 15 * 60 * 1000), // 有効期限15分
+    });
 
-      if (finalPayload.status === "success") {
-        // 認証に成功した証拠（Proof）を画面に表示する
-        setDebugData("✅ 認証成功！\nデータ: " + JSON.stringify(finalPayload, null, 2));
-      } else {
-        setDebugData("❌ 認証失敗またはキャンセル\n詳細: " + finalPayload.details);
-      }
-    } catch (error) {
-      setDebugData("⚠️ システムエラー: " + error);
+    // 3. ログインに成功したら次の画面へ
+    if (finalPayload.status === "error") {
+      console.error("ログイン失敗", finalPayload);
+    } else {
+      console.log("ログイン成功！", finalPayload);
+      router.push("/tasks");
     }
   };
 
   return (
-    <div style={{ backgroundColor: "#0A0A0A", color: "white", minHeight: "100vh", padding: "20px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <h1 style={{ fontSize: "20px", marginBottom: "20px" }}>World ID Debugger</h1>
+    <div style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "white" }}>
+      <h1 style={{ fontSize: "24px", fontWeight: "800", marginBottom: "40px" }}>CYBERRR</h1>
       
       <button 
-        onClick={handleVerify} 
-        style={{ padding: "15px 30px", background: "#06C755", borderRadius: "99px", color: "white", fontWeight: "bold", border: "none", marginBottom: "20px" }}
+        onClick={handleSignIn}
+        style={{ width: "80%", maxWidth: "300px", padding: "18px", borderRadius: "99px", backgroundColor: "white", color: "black", fontWeight: "bold", border: "none" }}
       >
-        認証テスト実行
+        ログインする
       </button>
-
-      {debugData && (
-        <div style={{ background: "#1A1A1A", padding: "15px", borderRadius: "10px", width: "100%", wordBreak: "break-all" }}>
-          <pre style={{ fontSize: "12px", whiteSpace: "pre-wrap" }}>{debugData}</pre>
-        </div>
-      )}
     </div>
   );
 }
