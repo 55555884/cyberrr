@@ -2,11 +2,22 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MiniKit } from "@worldcoin/minikit-js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AuthPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (MiniKit.isInstalled()) {
+      const profile = localStorage.getItem("profile");
+      if (profile) {
+        router.replace("/tasks");
+      } else {
+        router.replace("/profile/setup");
+      }
+    }
+  }, []);
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -18,7 +29,7 @@ export default function AuthPage() {
       });
       if (finalPayload.status === "success") {
         localStorage.setItem("worldid_verified", "true");
-        router.push("/tasks");
+        router.replace("/profile/setup");
       }
     } catch (error) {
       console.error("Auth error:", error);
@@ -43,7 +54,7 @@ export default function AuthPage() {
         disabled={loading}
         style={{ width: "100%", maxWidth: "340px", padding: "18px", borderRadius: "99px", background: "linear-gradient(135deg, #06C755, #04a344)", color: "#FFFFFF", fontWeight: "700", fontSize: "14px", border: "none", cursor: "pointer", opacity: loading ? 0.7 : 1 }}
       >
-        {loading ? "Verifying..." : "◎ Verify with World ID"}
+        {loading ? "Verifying..." : "Verify with World ID"}
       </button>
       <div style={{ position: "absolute", bottom: "40px", color: "#333", fontSize: "10px", fontWeight: "bold" }}>
         POWERED BY WORLDCOIN
