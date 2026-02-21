@@ -7,7 +7,7 @@ export default function Home() {
 
   const handleSignIn = async () => {
     if (!MiniKit.isInstalled()) {
-      alert("World App内で開いてください");
+      alert("World App内で実行してください。");
       return;
     }
 
@@ -17,7 +17,7 @@ export default function Home() {
         nonce: crypto.randomUUID(),
         requestId: "0",
         statement: "CYBERRRへのログインを承認してください。",
-        expirationTime: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        expirationTime: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24時間有効
       });
 
       if (finalPayload.status === "success") {
@@ -30,20 +30,20 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-black text-white">
-      <h1 className="text-4xl font-bold mb-8">CYBERRR</h1>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-black text-white p-6">
+      <h1 className="text-5xl font-extrabold mb-10 tracking-tighter">CYBERRR</h1>
       
       {!address ? (
         <button
           onClick={handleSignIn}
-          className="bg-[#00ff00] text-black px-8 py-4 rounded-full font-bold text-xl hover:opacity-80 transition-all"
+          className="bg-[#00ff00] text-black px-10 py-5 rounded-full font-bold text-xl active:scale-95 transition-transform"
         >
           World IDでログイン
         </button>
       ) : (
-        <div className="text-center">
-          <p className="text-green-400 mb-2">認証済み</p>
-          <p className="text-sm break-all">{address}</p>
+        <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 w-full max-w-sm text-center">
+          <p className="text-green-400 font-bold mb-2">認証に成功しました</p>
+          <p className="text-xs text-zinc-500 break-all">{address}</p>
         </div>
       )}
     </main>
