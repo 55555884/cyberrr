@@ -27,6 +27,12 @@ export default function ProfileSetup() {
     router.replace("/tasks");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("profile");
+    localStorage.removeItem("worldid_verified");
+    router.replace("/");
+  };
+
   const selectStyle = (selected: boolean) => ({
     padding: "12px 18px",
     borderRadius: "99px",
@@ -105,6 +111,13 @@ export default function ProfileSetup() {
         style={{ width: "100%", padding: "18px", borderRadius: "99px", background: isComplete ? "linear-gradient(135deg, #06C755, #04a344)" : "#E6E6E6", color: isComplete ? "#fff" : "#999999", fontWeight: "700", fontSize: "14px", border: "none", cursor: isComplete ? "pointer" : "default" }}
       >
         タスクを始める
+      </button>
+
+      <button
+        onClick={handleLogout}
+        style={{ width: "100%", padding: "14px", marginTop: "12px", borderRadius: "99px", background: "transparent", color: "#AAAAAA", fontWeight: "600", fontSize: "13px", border: "1px solid #CCCCCC", cursor: "pointer" }}
+      >
+        ログアウト・データリセット
       </button>
     </div>
   );
