@@ -17,18 +17,18 @@ export async function GET(request: Request) {
   // 署名の作成
   const checksum = crypto.createHash('md5').update(`${rawId}-${appId}-${appKey}`).digest('hex');
   
-  // 基本URL
+  // RapidoReach オファーウォール基本URL
   let finalUrl = `https://www.rapidoreach.com/ofw/?userId=${rawId}-${appId}-${checksum}`;
 
-  // 【互換性アップ】プロフィール情報を注入してスキップさせる
+  // 【最重要】初期入力をスキップさせるための変数名修正
+  // RapidoReachでは gender: 1(Male), 2(Female) / birth_year / zip を使用します
   if (gender) {
     const gCode = gender === '男性' ? '1' : gender === '女性' ? '2' : '0';
     finalUrl += `&gender=${gCode}`;
   }
   if (birthYear) finalUrl += `&birth_year=${birthYear}`;
-  if (zip) finalUrl += `&zip=${zip.replace(/[^\d]/g, '')}`; // ハイフン抜き数字のみ
-  
-  // 日本固定設定
+  if (zip) finalUrl += `&zip=${zip.replace(/[^\d]/g, '')}`; // 数字のみ抽出
+
   finalUrl += `&lang=jp&country=JP`;
 
   return NextResponse.json({ url: finalUrl });
