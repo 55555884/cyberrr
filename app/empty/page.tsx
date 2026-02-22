@@ -1,10 +1,12 @@
+import Image from "next/image";
+
 export default function Empty() {
   return (
     <div style={{backgroundColor: '#ECECEC', minHeight: '100vh', paddingBottom: '80px'}}>
 
       {/* ヘッダー */}
       <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 16px 12px'}}>
-        <img src="/logo.png" alt="CYBERRR" style={{width: '240px', height: '48px', objectFit: 'contain'}} />
+        <Image src="/logo.png" alt="CYBERRR" width={240} height={48} style={{objectFit: 'contain'}} />
         <div style={{display: 'flex', gap: '12px'}}>
           <span style={{fontSize: '20px'}}>🔔</span>
           <span style={{fontSize: '20px'}}>👤</span>

@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const data = await response.json();
 
     // 2. 各案件に署名付きURLを付与
-    const surveys = (data.surveys || []).map((s: any) => {
+    const surveys = (data.surveys || []).map((s: Record<string, unknown>) => {
       const checksum = crypto.createHash('md5').update(`${userId}-${appId}-${appKey}`).digest('hex');
       return {
         ...s,
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(surveys);
-  } catch (e) {
+  } catch {
     return NextResponse.json([]);
   }
 }

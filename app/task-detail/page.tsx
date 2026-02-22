@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function TaskDetail() {
   const router = useRouter();
@@ -9,7 +10,7 @@ export default function TaskDetail() {
 
       <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 16px 12px'}}>
         <button onClick={() => router.back()} style={{border: 'none', background: 'none', fontSize: '20px', cursor: 'pointer'}}>←</button>
-        <img src="/logo.png" alt="CYBERRR" style={{width: '240px', height: '48px', objectFit: 'contain'}} />
+        <Image src="/logo.png" alt="CYBERRR" width={240} height={48} style={{objectFit: 'contain'}} />
         <div style={{width: '20px'}}></div>
       </div>
 

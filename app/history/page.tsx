@@ -1,8 +1,6 @@
 "use client";
-import { useRouter } from "next/navigation";
 
 export default function HistoryPage() {
-  const router = useRouter();
   const histories = [
     { id: 1, title: "Lifestyle Survey", date: "2026/02/21", amount: "+0.50 USDC", status: "完了" },
     { id: 2, title: "Crypto Feedback", date: "2026/02/20", amount: "+1.20 USDC", status: "承認待ち" },
