@@ -2,31 +2,55 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const missions = [
-  { id: 1, title: "Consumer Trend Survey", reward: "1.50", time: "5 min", rating: "4.5", category: "SURVEY", company: "Nielsen" },
-  { id: 2, title: "Daily Lifestyle Feedback", reward: "0.75", time: "3 min", rating: "4.2", category: "SURVEY", company: "Ipsos" },
-  { id: 3, title: "Tech Product Review", reward: "2.00", time: "8 min", rating: "4.8", category: "OFFER", company: "Google" },
-  { id: 4, title: "Food Preference Study", reward: "1.25", time: "5 min", rating: "4.3", category: "SURVEY", company: "Kantar" },
-];
-
 const tabs = ["ALL", "SURVEY", "OFFER", "VIDEO"];
 
 export default function TasksPage() {
   const [activeTab, setActiveTab] = useState("ALL");
   const [activeNav, setActiveNav] = useState("Tasks");
+  const [showSurvey, setShowSurvey] = useState(false);
   const router = useRouter();
 
-  const filtered = activeTab === "ALL" ? missions : missions.filter(m => m.category === activeTab);
+  const appId = process.env.NEXT_PUBLIC_RAPIDOREACH_APP_ID;
+
+  // プロフィール取得
+  const profile = typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("profile") || "{}")
+    : {};
+
+  const userId = typeof window !== "undefined"
+    ? localStorage.getItem("worldid_verified") ? "user_" + btoa(localStorage.getItem("worldid_verified") || "").slice(0, 10) : "anonymous"
+    : "anonymous";
+
+  const rapidoUrl = `https://survey.rapidoreach.com/?app_key=${appId}&user_id=${userId}&fname=${profile.gender || ""}&lname=user&email=${userId}@cyberrr.app&birth_date=${profile.birthYear || "2000"}-${profile.birthMonth || "01"}-${profile.birthDay || "01"}&gender=${profile.gender === "男性" ? "male" : profile.gender === "女性" ? "female" : "other"}&country=JP&zip=${profile.zip || "100-0001"}&city=${profile.city || "Tokyo"}`;
+
+  if (showSurvey) {
+    return (
+      <div style={{ position: "fixed", inset: 0, background: "#ECECEC", zIndex: 999, display: "flex", flexDirection: "column" }}>
+        <div style={{ background: "#fff", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
+          <button
+            onClick={() => setShowSurvey(false)}
+            style={{ background: "#ECECEC", border: "none", borderRadius: "10px", padding: "8px 14px", fontWeight: "700", cursor: "pointer", fontSize: "14px" }}
+          >
+            ← 戻る
+          </button>
+          <span style={{ fontWeight: "800", fontSize: "15px", color: "#111" }}>アンケート</span>
+        </div>
+        <iframe
+          src={rapidoUrl}
+          style={{ flex: 1, border: "none", width: "100%" }}
+          allow="camera; microphone"
+        />
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#ECECEC", fontFamily: "'DM Sans', sans-serif", paddingBottom: "90px" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
         .card:active { transform: scale(0.97); }
-        .tab-btn { transition: all 0.2s ease; }
-        .nav-item { transition: all 0.2s ease; }
       `}</style>
 
       {/* ヘッダー */}
@@ -37,24 +61,22 @@ export default function TasksPage() {
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
           <button style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#fff", border: "none", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>🔔</button>
-          <button style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#111", border: "none", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>👤</button>
+          <button style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#111", border: "none", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center" }}>👤</button>
         </div>
       </header>
 
       {/* 収益バナー */}
       <div style={{ margin: "0 24px 28px", background: "linear-gradient(135deg, #111 0%, #333 100%)", borderRadius: "24px", padding: "24px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(6,199,85,0.15)" }} />
-        <div style={{ position: "absolute", bottom: "-30px", right: "40px", width: "80px", height: "80px", borderRadius: "50%", background: "rgba(6,199,85,0.08)" }} />
         <p style={{ fontSize: "11px", color: "#666", letterSpacing: "0.12em", marginBottom: "8px" }}>TOTAL EARNED</p>
         <p style={{ fontSize: "36px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em", marginBottom: "4px" }}>$0.00 <span style={{ fontSize: "14px", color: "#06C755", fontWeight: "700" }}>USDC</span></p>
         <p style={{ fontSize: "12px", color: "#555" }}>Complete tasks to earn rewards</p>
       </div>
 
       <main style={{ padding: "0 24px" }}>
-        {/* タイトル */}
         <div style={{ marginBottom: "20px" }}>
           <h2 style={{ fontSize: "20px", fontWeight: "900", color: "#111", letterSpacing: "-0.02em" }}>Available Tasks</h2>
-          <p style={{ fontSize: "12px", color: "#999", marginTop: "4px" }}>{filtered.length} tasks waiting for you</p>
+          <p style={{ fontSize: "12px", color: "#999", marginTop: "4px" }}>Powered by RapidoReach</p>
         </div>
 
         {/* タブ */}
@@ -62,7 +84,6 @@ export default function TasksPage() {
           {tabs.map(tab => (
             <button
               key={tab}
-              className="tab-btn"
               onClick={() => setActiveTab(tab)}
               style={{
                 padding: "8px 18px",
@@ -83,41 +104,47 @@ export default function TasksPage() {
           ))}
         </div>
 
-        {/* カード */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          {filtered.map(m => (
-            <div
-              key={m.id}
-              className="card"
-              style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px" }}>
-                    <span style={{ fontSize: "10px", fontWeight: "800", color: "#555", letterSpacing: "0.1em" }}>{m.category}</span>
-                  </div>
-                  <span style={{ fontSize: "11px", color: "#bbb", fontWeight: "500" }}>{m.company}</span>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <p style={{ fontSize: "22px", fontWeight: "900", color: "#111", letterSpacing: "-0.02em", lineHeight: 1 }}>${m.reward}</p>
-                  <p style={{ fontSize: "10px", color: "#06C755", fontWeight: "700" }}>USDC</p>
-                </div>
+        {/* RapidoReachカード */}
+        <div
+          className="card"
+          onClick={() => setShowSurvey(true)}
+          style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer", marginBottom: "14px" }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px" }}>
+                <span style={{ fontSize: "10px", fontWeight: "800", color: "#555", letterSpacing: "0.1em" }}>SURVEY</span>
               </div>
-
-              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111", marginBottom: "16px", lineHeight: 1.3 }}>{m.title}</h3>
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", gap: "16px" }}>
-                  <span style={{ fontSize: "12px", color: "#999", fontWeight: "600" }}>⏱ {m.time}</span>
-                  <span style={{ fontSize: "12px", color: "#999", fontWeight: "600" }}>★ {m.rating}</span>
-                </div>
-                <button style={{ background: "#111", color: "#fff", border: "none", borderRadius: "12px", padding: "8px 18px", fontSize: "12px", fontWeight: "700", cursor: "pointer" }}>
-                  Start →
-                </button>
-              </div>
+              <span style={{ fontSize: "11px", color: "#bbb", fontWeight: "500" }}>RapidoReach</span>
             </div>
-          ))}
+            <div style={{ textAlign: "right" }}>
+              <p style={{ fontSize: "22px", fontWeight: "900", color: "#111", letterSpacing: "-0.02em", lineHeight: 1 }}>$1.00+</p>
+              <p style={{ fontSize: "10px", color: "#06C755", fontWeight: "700" }}>USDC</p>
+            </div>
+          </div>
+          <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111", marginBottom: "16px" }}>Available Surveys</h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "12px", color: "#999", fontWeight: "600" }}>複数のアンケートから選択</span>
+            <button style={{ background: "#111", color: "#fff", border: "none", borderRadius: "12px", padding: "8px 18px", fontSize: "12px", fontWeight: "700", cursor: "pointer" }}>
+              Start →
+            </button>
+          </div>
         </div>
+
+        {/* Coming Soon カード */}
+        {["OFFER", "VIDEO"].map(type => (
+          <div key={type} style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", marginBottom: "14px", opacity: 0.5 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px", display: "inline-block", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "10px", fontWeight: "800", color: "#555" }}>{type}</span>
+                </div>
+                <p style={{ fontSize: "15px", fontWeight: "700", color: "#111" }}>Coming Soon</p>
+              </div>
+              <span style={{ fontSize: "12px", color: "#bbb", fontWeight: "600" }}>🔒</span>
+            </div>
+          </div>
+        ))}
       </main>
 
       {/* ボトムナビ */}
@@ -130,7 +157,6 @@ export default function TasksPage() {
         ].map(item => (
           <button
             key={item.label}
-            className="nav-item"
             onClick={() => setActiveNav(item.label)}
             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", background: "none", border: "none", cursor: "pointer", padding: "4px 16px" }}
           >
