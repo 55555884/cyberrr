@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const JOBS = ["会社員", "公務員", "経営者/役員", "フリーランス", "学生", "主婦/主夫", "アルバイト/パート", "無職", "その他"];
 const LANGUAGES = ["日本語", "English", "中文", "한국어", "Español", "Français", "Deutsch", "Português"];
@@ -13,6 +13,18 @@ export default function ProfileSetup() {
   const [birthYear, setBirthYear] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
   const [birthDay, setBirthDay] = useState("");
+  const [checking, setChecking] = useState(true);
+
+  // 入力済みの場合はタスク画面へ（再編集不可）
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const existing = localStorage.getItem("profile");
+    if (existing) {
+      router.replace("/tasks");
+    } else {
+      setChecking(false);
+    }
+  }, [router]);
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 80 }, (_, i) => String(currentYear - 10 - i));
@@ -27,12 +39,6 @@ export default function ProfileSetup() {
     router.replace("/tasks");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("profile");
-    localStorage.removeItem("worldid_verified");
-    router.replace("/");
-  };
-
   const selectStyle = (selected: boolean) => ({
     padding: "12px 18px",
     borderRadius: "99px",
@@ -44,10 +50,18 @@ export default function ProfileSetup() {
     cursor: "pointer",
   });
 
+  if (checking) return null;
+
   return (
     <div style={{ backgroundColor: "#ECECEC", minHeight: "100vh", padding: "48px 24px 100px", color: "#111111" }}>
       <h1 style={{ fontSize: "22px", fontWeight: "800", marginBottom: "8px" }}>プロフィール設定</h1>
-      <p style={{ color: "#666666", fontSize: "13px", marginBottom: "40px" }}>より多くの案件を受け取るために教えてください</p>
+      <p style={{ color: "#666666", fontSize: "13px", marginBottom: "16px" }}>より多くの案件を受け取るために教えてください</p>
+
+      {/* 一度きり注意書き */}
+      <div style={{ backgroundColor: "#FFF8E1", borderRadius: "12px", padding: "12px 16px", marginBottom: "32px", border: "1px solid #FFD54F" }}>
+        <p style={{ fontSize: "12px", fontWeight: "700", color: "#B8860B", margin: "0 0 2px 0" }}>⚠️ 一度設定したら変更できません</p>
+        <p style={{ fontSize: "11px", color: "#9A7D0A", margin: 0 }}>入力内容はアンケートのマッチングに使用されます。慎重に選択してください。</p>
+      </div>
 
       <div style={{ marginBottom: "32px" }}>
         <p style={{ fontSize: "13px", color: "#666666", marginBottom: "12px" }}>性別</p>
@@ -111,13 +125,6 @@ export default function ProfileSetup() {
         style={{ width: "100%", padding: "18px", borderRadius: "99px", background: isComplete ? "linear-gradient(135deg, #06C755, #04a344)" : "#E6E6E6", color: isComplete ? "#fff" : "#999999", fontWeight: "700", fontSize: "14px", border: "none", cursor: isComplete ? "pointer" : "default" }}
       >
         タスクを始める
-      </button>
-
-      <button
-        onClick={handleLogout}
-        style={{ width: "100%", padding: "14px", marginTop: "12px", borderRadius: "99px", background: "transparent", color: "#AAAAAA", fontWeight: "600", fontSize: "13px", border: "1px solid #CCCCCC", cursor: "pointer" }}
-      >
-        ログアウト・データリセット
       </button>
     </div>
   );
