@@ -8,6 +8,7 @@ export default function AuthPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [miniKitReady, setMiniKitReady] = useState(false);
 
   // ?reset=1 でアクセスすると localStorage をクリアして初回状態に戻す
   useEffect(() => {
@@ -20,11 +21,34 @@ export default function AuthPage() {
     }
   }, []);
 
+  // MiniKit の準備が整っているか確認
+  useEffect(() => {
+    const check = setInterval(() => {
+      if (MiniKit.isInstalled()) {
+        setMiniKitReady(true);
+        clearInterval(check);
+      }
+    }, 200);
+    // 3秒後に諦める（World App 外の場合）
+    const timeout = setTimeout(() => {
+      clearInterval(check);
+      setMiniKitReady(false);
+    }, 3000);
+    return () => {
+      clearInterval(check);
+      clearTimeout(timeout);
+    };
+  }, []);
+
   const handleSignIn = async () => {
+    if (!MiniKit.isInstalled()) {
+      setError("World App から開いてください / Please open via World App");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
-      const nonce = Math.random().toString(36).substring(2);
+      const nonce = crypto.randomUUID().replace(/-/g, "");
       const { finalPayload } = await MiniKit.commandsAsync.walletAuth({
         nonce,
         statement: "Sign in to CYBERRR",
@@ -39,11 +63,12 @@ export default function AuthPage() {
           router.replace("/profile/setup");
         }
       } else {
-        setError("認証に失敗しました。もう一度お試しください。");
+        setError("認証がキャンセルされました。もう一度お試しください。");
       }
     } catch (e) {
       console.error("Auth error:", e);
-      setError("エラーが発生しました。もう一度お試しください。");
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(`認証エラー: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -60,16 +85,38 @@ export default function AuthPage() {
         </h1>
         <p style={{ color: "#666666", fontSize: "13px" }}>Secure access via Worldcoin Protocol</p>
       </div>
+
       <button
         onClick={handleSignIn}
         disabled={loading}
-        style={{ width: "100%", maxWidth: "340px", padding: "18px", borderRadius: "99px", background: "linear-gradient(135deg, #06C755, #04a344)", color: "#FFFFFF", fontWeight: "700", fontSize: "14px", border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1 }}
+        style={{
+          width: "100%",
+          maxWidth: "340px",
+          padding: "18px",
+          borderRadius: "99px",
+          background: "linear-gradient(135deg, #06C755, #04a344)",
+          color: "#FFFFFF",
+          fontWeight: "700",
+          fontSize: "14px",
+          border: "none",
+          cursor: loading ? "default" : "pointer",
+          opacity: loading ? 0.7 : 1,
+        }}
       >
         {loading ? "Verifying..." : "Verify with World ID"}
       </button>
+
       {error && (
-        <p style={{ color: "#FF3B30", fontSize: "12px", marginTop: "16px", textAlign: "center" }}>{error}</p>
+        <p style={{ color: "#FF3B30", fontSize: "12px", marginTop: "16px", textAlign: "center", maxWidth: "300px", lineHeight: 1.5 }}>{error}</p>
       )}
+
+      {/* World App 外でのデバッグ用ステータス */}
+      {!miniKitReady && !loading && (
+        <p style={{ color: "#AAAAAA", fontSize: "10px", marginTop: "24px", textAlign: "center" }}>
+          World App で開いてください
+        </p>
+      )}
+
       <div style={{ position: "absolute", bottom: "40px", color: "#666666", fontSize: "10px", fontWeight: "bold" }}>
         POWERED BY WORLDCOIN
       </div>
