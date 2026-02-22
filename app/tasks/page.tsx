@@ -1,90 +1,144 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+const missions = [
+  { id: 1, title: "Consumer Trend Survey", reward: "1.50", time: "5 min", rating: "4.5", category: "SURVEY", company: "Nielsen" },
+  { id: 2, title: "Daily Lifestyle Feedback", reward: "0.75", time: "3 min", rating: "4.2", category: "SURVEY", company: "Ipsos" },
+  { id: 3, title: "Tech Product Review", reward: "2.00", time: "8 min", rating: "4.8", category: "OFFER", company: "Google" },
+  { id: 4, title: "Food Preference Study", reward: "1.25", time: "5 min", rating: "4.3", category: "SURVEY", company: "Kantar" },
+];
+
+const tabs = ["ALL", "SURVEY", "OFFER", "VIDEO"];
 
 export default function TasksPage() {
-  const missions = [
-    {
-      id: 1,
-      title: "Consumer Trend Survey",
-      reward: "1.50",
-      time: "5 min",
-      rating: "4.5",
-      category: "SURVEY"
-    },
-    {
-      id: 2,
-      title: "Daily Lifestyle Feedback",
-      reward: "0.75",
-      time: "5 min",
-      rating: "4.5",
-      category: "SURVEY"
-    }
-  ];
+  const [activeTab, setActiveTab] = useState("ALL");
+  const [activeNav, setActiveNav] = useState("Tasks");
+  const router = useRouter();
+
+  const filtered = activeTab === "ALL" ? missions : missions.filter(m => m.category === activeTab);
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
-      {/* ヘッダーセクション */}
-      <header className="p-6 pt-10 flex justify-between items-center">
-        <h1 className="text-3xl font-black italic tracking-tighter">CYBERRR</h1>
-        <div className="flex gap-4">
-          <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center text-xl">🔔</div>
-          <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center text-xl">👤</div>
+    <div style={{ minHeight: "100vh", backgroundColor: "#ECECEC", fontFamily: "'DM Sans', sans-serif", paddingBottom: "90px" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@500&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        .card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .card:active { transform: scale(0.97); }
+        .tab-btn { transition: all 0.2s ease; }
+        .nav-item { transition: all 0.2s ease; }
+      `}</style>
+
+      {/* ヘッダー */}
+      <header style={{ padding: "52px 24px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <p style={{ fontSize: "11px", fontWeight: "700", color: "#999", letterSpacing: "0.15em", marginBottom: "4px" }}>WELCOME BACK</p>
+          <h1 style={{ fontSize: "28px", fontWeight: "900", color: "#111", letterSpacing: "-0.03em" }}>CYBERRR</h1>
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#fff", border: "none", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>🔔</button>
+          <button style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#111", border: "none", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>👤</button>
         </div>
       </header>
 
-      <main className="px-6">
-        <h2 className="text-3xl font-bold mb-2">AVAILABLE TASKS</h2>
-        <p className="text-zinc-500 text-sm mb-8">Complete tasks to earn USDC instantly</p>
+      {/* 収益バナー */}
+      <div style={{ margin: "0 24px 28px", background: "linear-gradient(135deg, #111 0%, #333 100%)", borderRadius: "24px", padding: "24px", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(6,199,85,0.15)" }} />
+        <div style={{ position: "absolute", bottom: "-30px", right: "40px", width: "80px", height: "80px", borderRadius: "50%", background: "rgba(6,199,85,0.08)" }} />
+        <p style={{ fontSize: "11px", color: "#666", letterSpacing: "0.12em", marginBottom: "8px" }}>TOTAL EARNED</p>
+        <p style={{ fontSize: "36px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em", marginBottom: "4px" }}>$0.00 <span style={{ fontSize: "14px", color: "#06C755", fontWeight: "700" }}>USDC</span></p>
+        <p style={{ fontSize: "12px", color: "#555" }}>Complete tasks to earn rewards</p>
+      </div>
 
-        {/* カテゴリタブ */}
-        <div className="flex gap-3 mb-8 overflow-x-auto no-scrollbar">
-          {["ALL", "SURVEY", "OFFER", "VIDEO"].map((tab) => (
-            <button key={tab} className={`px-6 py-2 rounded-full text-[10px] font-black tracking-widest ${tab === "ALL" ? 'bg-[#00ff00] text-black' : 'bg-zinc-900 text-zinc-500'}`}>
+      <main style={{ padding: "0 24px" }}>
+        {/* タイトル */}
+        <div style={{ marginBottom: "20px" }}>
+          <h2 style={{ fontSize: "20px", fontWeight: "900", color: "#111", letterSpacing: "-0.02em" }}>Available Tasks</h2>
+          <p style={{ fontSize: "12px", color: "#999", marginTop: "4px" }}>{filtered.length} tasks waiting for you</p>
+        </div>
+
+        {/* タブ */}
+        <div style={{ display: "flex", gap: "8px", marginBottom: "24px", overflowX: "auto", paddingBottom: "4px" }}>
+          {tabs.map(tab => (
+            <button
+              key={tab}
+              className="tab-btn"
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: "8px 18px",
+                borderRadius: "99px",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "11px",
+                fontWeight: "800",
+                letterSpacing: "0.1em",
+                whiteSpace: "nowrap",
+                background: activeTab === tab ? "#111" : "#fff",
+                color: activeTab === tab ? "#fff" : "#999",
+                boxShadow: activeTab === tab ? "0 4px 12px rgba(0,0,0,0.2)" : "0 2px 6px rgba(0,0,0,0.06)",
+              }}
+            >
               {tab}
             </button>
           ))}
         </div>
 
-        {/* 案件カードリスト */}
-        <div className="space-y-4">
-          {missions.map((m) => (
-            <div key={m.id} className="bg-zinc-900/50 border border-zinc-800/50 p-6 rounded-[2rem] active:scale-[0.98] transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <span className="bg-zinc-800 text-[#00ff00] text-[9px] font-black px-3 py-1 rounded-md uppercase tracking-widest">
-                  {m.category}
-                </span>
-                <span className="text-[#00ff00] text-xl font-black">{m.reward} USDC</span>
+        {/* カード */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {filtered.map(m => (
+            <div
+              key={m.id}
+              className="card"
+              style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px" }}>
+                    <span style={{ fontSize: "10px", fontWeight: "800", color: "#555", letterSpacing: "0.1em" }}>{m.category}</span>
+                  </div>
+                  <span style={{ fontSize: "11px", color: "#bbb", fontWeight: "500" }}>{m.company}</span>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ fontSize: "22px", fontWeight: "900", color: "#111", letterSpacing: "-0.02em", lineHeight: 1 }}>${m.reward}</p>
+                  <p style={{ fontSize: "10px", color: "#06C755", fontWeight: "700" }}>USDC</p>
+                </div>
               </div>
-              
-              <h3 className="text-xl font-bold mb-4">{m.title}</h3>
-              
-              <div className="flex items-center gap-4 text-zinc-500 text-xs font-bold">
-                <span className="flex items-center gap-1.5">⏱ {m.time}</span>
-                <span className="flex items-center gap-1.5">★ {m.rating}</span>
+
+              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111", marginBottom: "16px", lineHeight: 1.3 }}>{m.title}</h3>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "16px" }}>
+                  <span style={{ fontSize: "12px", color: "#999", fontWeight: "600" }}>⏱ {m.time}</span>
+                  <span style={{ fontSize: "12px", color: "#999", fontWeight: "600" }}>★ {m.rating}</span>
+                </div>
+                <button style={{ background: "#111", color: "#fff", border: "none", borderRadius: "12px", padding: "8px 18px", fontSize: "12px", fontWeight: "700", cursor: "pointer" }}>
+                  Start →
+                </button>
               </div>
             </div>
           ))}
         </div>
       </main>
 
-      {/* フッターナビゲーション */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl border-t border-zinc-800 px-8 py-6 flex justify-around items-center">
-        <div className="flex flex-col items-center gap-1 text-[#00ff00]">
-          <span className="text-xl">📋</span>
-          <span className="text-[10px] font-bold">Tasks</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 text-zinc-600">
-          <span className="text-xl">🔍</span>
-          <span className="text-[10px] font-bold">Search</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 text-zinc-600">
-          <span className="text-xl">📋</span>
-          <span className="text-[10px] font-bold">History</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 text-zinc-600">
-          <span className="text-xl">👤</span>
-          <span className="text-[10px] font-bold">Profile</span>
-        </div>
+      {/* ボトムナビ */}
+      <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1px solid #eee", padding: "12px 8px 24px", display: "flex", justifyContent: "space-around" }}>
+        {[
+          { icon: "📋", label: "Tasks" },
+          { icon: "🔍", label: "Search" },
+          { icon: "🕐", label: "History" },
+          { icon: "👤", label: "Profile" },
+        ].map(item => (
+          <button
+            key={item.label}
+            className="nav-item"
+            onClick={() => setActiveNav(item.label)}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", background: "none", border: "none", cursor: "pointer", padding: "4px 16px" }}
+          >
+            <span style={{ fontSize: "20px" }}>{item.icon}</span>
+            <span style={{ fontSize: "10px", fontWeight: "700", color: activeNav === item.label ? "#111" : "#bbb", letterSpacing: "0.05em" }}>{item.label}</span>
+            {activeNav === item.label && <div style={{ width: "4px", height: "4px", borderRadius: "50%", background: "#06C755" }} />}
+          </button>
+        ))}
       </nav>
     </div>
   );
