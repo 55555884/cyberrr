@@ -2,86 +2,95 @@
 import { useState, useEffect } from "react";
 
 export default function TasksPage() {
-  const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-    // 保存されたプロフィールを確実に取得
     const saved = localStorage.getItem("profile");
-    if (saved) setProfile(JSON.parse(saved));
+    if (saved) {
+      setProfile(JSON.parse(saved));
+    }
   }, []);
 
-  const handleStartMission = async () => {
-    setLoading(true);
-    try {
-      const userId = localStorage.getItem("worldid_address") || "user_888";
-      
-      // 作成済みの本番用APIルート「rapidoreach-uid」を呼び出す
-      const res = await fetch(
-        `/api/rapidoreach-uid?userId=${userId}&gender=${profile?.gender}&birthYear=${profile?.birthYear}`
-      );
-      const data = await res.json();
-
-      if (data.url) {
-        // デモではなく、署名済みの本番案件URLへ強制ジャンプ
-        window.location.href = data.url; 
-      } else {
-        alert("APIエラー: URLが生成できませんでした。Vercelの環境変数を確認してください。");
-      }
-    } catch (e) {
-      console.error("Connection failed", e);
-    } finally {
-      setLoading(false);
+  const missions = [
+    {
+      id: 1,
+      title: "Consumer Trend Survey",
+      reward: "1.50",
+      time: "5 min",
+      rating: "4.8",
+      category: "SURVEY",
+      color: "#00ff00"
+    },
+    {
+      id: 2,
+      title: "App Experience Feedback",
+      reward: "2.00",
+      time: "8 min",
+      rating: "4.9",
+      category: "OFFER",
+      color: "#00ff00"
+    },
+    {
+      id: 3,
+      title: "Daily Brand Check-in",
+      reward: "0.50",
+      time: "2 min",
+      rating: "4.5",
+      category: "DAILY",
+      color: "#00ff00"
     }
-  };
+  ];
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans flex flex-col items-center">
-      {/* ヘッダー */}
-      <header className="w-full flex justify-between items-center mb-10 pt-4">
-        <h1 className="text-3xl font-black italic tracking-tighter text-[#00ff00]">CYBERRR</h1>
-        <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center">👤</div>
+    <div className="min-h-screen bg-black text-white p-6 pb-32">
+      <header className="flex justify-between items-center mb-10 pt-4">
+        <div>
+          <h1 className="text-3xl font-black italic tracking-tighter text-[#00ff00]">CYBERRR</h1>
+          <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest mt-1">Premium Mission Hub</p>
+        </div>
+        <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center border border-zinc-800">👤</div>
       </header>
 
-      <div className="w-full">
-        <h2 className="text-xl font-black mb-6 uppercase tracking-widest">Available Mission</h2>
-
-        {/* 🚀 これが本番の案件起動カードです */}
-        <div 
-          onClick={handleStartMission}
-          className="bg-zinc-900 border-2 border-zinc-800 p-8 rounded-[2.5rem] relative active:scale-95 transition-all cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
-        >
-          <div className="flex justify-between items-start mb-6">
-            <span className="bg-[#00ff00] text-black text-[10px] font-black px-3 py-1 rounded-full uppercase">
-              Premium Survey
-            </span>
-            <span className="text-[#00ff00] text-xl font-black italic">HIGH REWARD</span>
-          </div>
-
-          <h3 className="text-2xl font-bold mb-3 text-white">RapidReach 案件リスト</h3>
-          <p className="text-zinc-500 text-sm mb-10 leading-relaxed">
-            審査通過済み公式パートナーAPI。あなたのプロフィールに最適化された高単価アンケートを開始します。
-          </p>
-          
-          <div className={`w-full py-5 rounded-2xl font-black text-center text-sm transition-colors ${loading ? 'bg-zinc-700 text-zinc-500' : 'bg-white text-black'}`}>
-            {loading ? "API CONNECTING..." : "今すぐミッションを開始"}
-          </div>
-
-          {/* ローディングオーバーレイ */}
-          {loading && (
-            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
-               <div className="w-10 h-10 border-4 border-[#00ff00] border-t-transparent rounded-full animate-spin mb-4"></div>
-               <p className="text-[#00ff00] font-bold text-xs">GENERATING SIGNED URL...</p>
-            </div>
-          )}
-        </div>
+      <div className="flex gap-3 mb-8 overflow-x-auto pb-2 no-scrollbar">
+        {["ALL", "SURVEY", "OFFER", "DAILY"].map((tab) => (
+          <button key={tab} className={`px-6 py-2 rounded-full text-[10px] font-black tracking-widest ${tab === "ALL" ? 'bg-[#00ff00] text-black' : 'bg-zinc-900 text-zinc-500 border border-zinc-800'}`}>
+            {tab}
+          </button>
+        ))}
       </div>
 
-      {/* フッターナビ */}
+      <div className="grid gap-5">
+        {missions.map((mission) => (
+          <div key={mission.id} className="bg-zinc-900 border border-zinc-800 p-7 rounded-[2.5rem] relative group active:scale-[0.98] transition-all">
+            <div className="flex justify-between items-start mb-6">
+              <span className="text-[10px] font-black text-[#00ff00] uppercase tracking-widest bg-[#00ff00]/10 px-3 py-1 rounded-full border border-[#00ff00]/20">
+                {mission.category}
+              </span>
+              <div className="text-right">
+                <span className="text-[#00ff00] text-2xl font-black">{mission.reward}</span>
+                <span className="text-zinc-600 text-[10px] block font-bold">USDC</span>
+              </div>
+            </div>
+            
+            <h3 className="text-xl font-bold mb-8 pr-4 leading-tight">{mission.title}</h3>
+            
+            <div className="flex items-center gap-6 mb-8">
+              <span className="text-zinc-500 text-xs font-bold flex items-center gap-1.5">⏱ {mission.time}</span>
+              <span className="text-zinc-500 text-xs font-bold flex items-center gap-1.5">★ {mission.rating}</span>
+            </div>
+
+            <button className="w-full bg-white text-black py-4 rounded-2xl font-black text-sm active:scale-95 transition-all shadow-xl">
+              START MISSION
+            </button>
+          </div>
+        ))}
+      </div>
+
       <nav className="fixed bottom-8 left-6 right-6">
-        <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800/50 p-2 rounded-full flex justify-around items-center shadow-2xl">
-          <button className="bg-[#00ff00] text-black px-10 py-3 rounded-full text-xs font-black">Tasks</button>
-          <button className="text-zinc-600 text-xs font-black px-10 py-3">Profile</button>
+        <div className="bg-zinc-900/80 backdrop-blur-3xl border border-zinc-800/50 p-2 rounded-full flex justify-around items-center shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <button className="bg-[#00ff00] text-black px-8 py-3 rounded-full text-xs font-black shadow-lg">TASKS</button>
+          <button className="text-zinc-500 text-xs font-black px-4 py-3">WALLET</button>
+          <button className="text-zinc-500 text-xs font-black px-4 py-3">PROFILE</button>
         </div>
       </nav>
     </div>
