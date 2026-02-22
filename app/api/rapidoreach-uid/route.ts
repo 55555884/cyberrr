@@ -3,35 +3,19 @@ import crypto from 'crypto';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const internalUserId = searchParams.get('userId') || 'guest';
   
-  // ユーザー識別子を確実に取得
-  const rawId = searchParams.get('userId') || 'user_guest';
-  const gender = searchParams.get('gender') || ''; 
-  const birthYear = searchParams.get('birthYear') || '';
+  const appId = 'PVnxv7sZMH2';
+  const appKey = process.env.RAPIDOREACH_APP_KEY || '';
   
-  // Vercelに設定した環境変数を取得
-  const appId = process.env.RAPIDOREACH_APP_ID || 'PVnxv7sZMH2';
-  const appKey = process.env.RAPIDOREACH_APP_KEY; 
-
-  if (!appKey) {
-    return NextResponse.json({ error: "API_KEY_MISSING" }, { status: 500 });
-  }
-
-  // 1. 署名の作成 (userId-appId-appKey)
-  const checksum = crypto.createHash('md5').update(`${rawId}-${appId}-${appKey}`).digest('hex');
+  // checksum = md5("internalUserId-appId-appKey")
+  const checksumInput = `${internalUserId}-${appId}-${appKey}`;
+  const checksum = crypto.createHash('md5').update(checksumInput).digest('hex');
   
-  // 2. 本番URLの構築 (署名入り)
-  let finalUrl = `https://www.rapidoreach.com/ofw/?userId=${rawId}-${appId}-${checksum}`;
-
-  // 3. 属性情報の付与 (互換性維持)
-  if (gender) {
-    const gCode = gender === '男性' ? '1' : gender === '女性' ? '2' : '0';
-    finalUrl += `&gender=${gCode}`;
-  }
-  if (birthYear) finalUrl += `&birth_year=${birthYear}`;
+  // UID = internalUserId-appId-checksum
+  const uid = `${internalUserId}-${appId}-${checksum}`;
+  const encodedUid = encodeURIComponent(uid);
+  const iframeUrl = `https://www.rapidoreach.com/ofw/?userId=${encodedUid}`;
   
-  // 国と言語を固定
-  finalUrl += `&lang=jp&country=JP`;
-
-  return NextResponse.json({ url: finalUrl });
+  return NextResponse.json({ uid, iframeUrl });
 }

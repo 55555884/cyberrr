@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 const tabs = ["ALL", "SURVEY", "OFFER", "VIDEO"];
 
@@ -7,50 +7,48 @@ export default function TasksPage() {
   const [activeTab, setActiveTab] = useState("ALL");
   const [activeNav, setActiveNav] = useState("Tasks");
   const [showSurvey, setShowSurvey] = useState(false);
-  const scriptLoaded = useRef(false);
-
-  const appId = "PVnxv7sZMH2";
-  const userId = typeof window !== "undefined"
-    ? "user_" + (localStorage.getItem("worldid_verified") || "guest")
-    : "guest";
+  const [iframeUrl, setIframeUrl] = useState("");
 
   useEffect(() => {
-    if (showSurvey && !scriptLoaded.current) {
-      setTimeout(() => {
-        const existing = document.querySelector('script[data-app-id]');
-        if (existing) existing.remove();
-        const script = document.createElement("script");
-        script.src = "https://www.rapidoreach.com/ofw/rapidoreach-widget.min.js";
-        script.setAttribute("data-app-id", appId);
-        script.setAttribute("data-end-user-id", userId);
-        script.setAttribute("data-container", "#rapidoreach-offerwall");
-        script.setAttribute("data-height", "100%");
-        script.setAttribute("data-loader-text", "Finding surveys for you…");
-        script.async = true;
-        document.body.appendChild(script);
-        scriptLoaded.current = true;
-      }, 100);
-    }
-  }, [showSurvey]);
+    const userId = typeof window !== "undefined"
+      ? "user_" + (localStorage.getItem("worldid_verified") || "guest").slice(0, 8)
+      : "guest";
+    
+    fetch(`/api/rapidoreach-uid?userId=${userId}`)
+      .then(res => res.json())
+      .then(data => setIframeUrl(data.iframeUrl))
+      .catch(() => setIframeUrl(""));
+  }, []);
 
   if (showSurvey) {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "#ECECEC", fontFamily: "'DM Sans', sans-serif", display: "flex", flexDirection: "column" }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
-        <div style={{ background: "#fff", padding: "52px 20px 16px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <div style={{ background: "#fff", padding: "52px 20px 16px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", position: "sticky", top: 0, zIndex: 10 }}>
           <button
-            onClick={() => { setShowSurvey(false); scriptLoaded.current = false; }}
+            onClick={() => setShowSurvey(false)}
             style={{ background: "#ECECEC", border: "none", borderRadius: "10px", padding: "8px 14px", fontWeight: "700", cursor: "pointer", fontSize: "14px", color: "#111" }}
           >
             ← 戻る
           </button>
           <span style={{ fontWeight: "900", fontSize: "16px", color: "#111" }}>アンケート一覧</span>
         </div>
-        <div style={{ flex: 1, padding: "20px" }}>
-          <div
-            id="rapidoreach-offerwall"
-            style={{ width: "100%", minHeight: "700px", borderRadius: "20px", overflow: "hidden", background: "#fff", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
-          />
+        <div style={{ flex: 1, padding: "16px" }}>
+          {iframeUrl ? (
+            <iframe
+              src={iframeUrl}
+              width="100%"
+              height="2500px"
+              frameBorder="0"
+              scrolling="no"
+              name="RewardsCenter"
+              style={{ borderRadius: "20px", border: "none", display: "block" }}
+            />
+          ) : (
+            <div style={{ textAlign: "center", padding: "60px", color: "#999", fontWeight: "600" }}>
+              Loading surveys...
+            </div>
+          )}
         </div>
       </div>
     );
