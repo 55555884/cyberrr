@@ -1,11 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import ProfileGuard from "@/components/ProfileGuard";
 
 export default function TaskDetail() {
   const router = useRouter();
 
   return (
+    <ProfileGuard>
     <div style={{backgroundColor: '#ECECEC', minHeight: '100vh', paddingBottom: '100px'}}>
 
       <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 16px 12px'}}>
@@ -61,5 +63,6 @@ export default function TaskDetail() {
         </button>
       </div>
     </div>
+    </ProfileGuard>
   );
 }
