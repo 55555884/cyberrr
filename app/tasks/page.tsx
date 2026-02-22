@@ -1,185 +1,92 @@
 "use client";
 import { useState, useEffect } from "react";
 
-const tabs = ["ALL", "SURVEY", "OFFER", "VIDEO"];
-
 export default function TasksPage() {
-  const [activeTab, setActiveTab] = useState("ALL");
-  const [activeNav, setActiveNav] = useState("Tasks");
-  const [showSurvey, setShowSurvey] = useState(false);
-  const [iframeUrl, setIframeUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [surveyUrl, setSurveyUrl] = useState("");
 
   useEffect(() => {
-    const userId = typeof window !== "undefined"
-      ? "user_" + (localStorage.getItem("worldid_verified") || "guest").slice(0, 8)
-      : "guest";
-    
-    fetch(`/api/rapidoreach-uid?userId=${userId}`)
-      .then(res => res.json())
-      .then(data => setIframeUrl(data.iframeUrl))
-      .catch(() => setIframeUrl(""));
+    // ページ読み込み時に署名済みURLを事前に取得しておく
+    async function prepareSurvey() {
+      const profile = JSON.parse(localStorage.getItem("profile") || "{}");
+      const userId = localStorage.getItem("worldid_address") || "user_test";
+      
+      const res = await fetch(
+        `/api/rapidoreach-uid?userId=${userId}&gender=${profile.gender}&birthYear=${profile.birthYear}&zip=${profile.zip}`
+      );
+      const data = await res.json();
+      if (data.url) setSurveyUrl(data.url);
+    }
+    prepareSurvey();
   }, []);
 
-  if (showSurvey) {
-    return (
-      <div style={{ minHeight: "100vh", backgroundColor: "#ECECEC", fontFamily: "'DM Sans', sans-serif", display: "flex", flexDirection: "column" }}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
-        <div style={{ background: "#fff", padding: "52px 20px 16px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", position: "sticky", top: 0, zIndex: 10 }}>
-          <button
-            onClick={() => setShowSurvey(false)}
-            style={{ background: "#ECECEC", border: "none", borderRadius: "10px", padding: "8px 14px", fontWeight: "700", cursor: "pointer", fontSize: "14px", color: "#111" }}
-          >
-            ← 戻る
-          </button>
-          <span style={{ fontWeight: "900", fontSize: "16px", color: "#111" }}>アンケート一覧</span>
-        </div>
-        <div style={{ flex: 1, padding: "16px" }}>
-          {iframeUrl ? (
-            <iframe
-              src={iframeUrl}
-              width="100%"
-              height="2500px"
-              frameBorder="0"
-              scrolling="no"
-              name="RewardsCenter"
-              style={{ borderRadius: "20px", border: "none", display: "block" }}
-            />
-          ) : (
-            <div style={{ textAlign: "center", padding: "60px", color: "#999", fontWeight: "600" }}>
-              Loading surveys...
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#ECECEC", fontFamily: "'DM Sans', sans-serif", paddingBottom: "90px" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        .card:active { transform: scale(0.97); }
-      `}</style>
-
-      <header style={{ padding: "52px 24px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <p style={{ fontSize: "11px", fontWeight: "700", color: "#999", letterSpacing: "0.15em", marginBottom: "4px" }}>WELCOME BACK</p>
-          <h1 style={{ fontSize: "28px", fontWeight: "900", color: "#111", letterSpacing: "-0.03em" }}>CYBERRR</h1>
+    <div className="min-h-screen bg-[#F5F5F7] text-black font-sans pb-24">
+      {/* 合計獲得額表示エリア (image 13のスタイル) */}
+      <div className="bg-[#1A1A1A] text-white p-8 rounded-b-[3rem] mb-8">
+        <p className="text-zinc-500 text-[10px] font-bold uppercase mb-2">Total Earned</p>
+        <div className="flex items-baseline gap-2">
+          <span className="text-4xl font-black">$0.00</span>
+          <span className="text-[#00ff00] font-bold text-sm">USDC</span>
         </div>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#fff", border: "none", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>🔔</button>
-          <button style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#111", border: "none", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center" }}>👤</button>
-        </div>
-      </header>
-
-      <div style={{ margin: "0 24px 28px", background: "linear-gradient(135deg, #111 0%, #333 100%)", borderRadius: "24px", padding: "24px", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(6,199,85,0.15)" }} />
-        <p style={{ fontSize: "11px", color: "#666", letterSpacing: "0.12em", marginBottom: "8px" }}>TOTAL EARNED</p>
-        <p style={{ fontSize: "36px", fontWeight: "900", color: "#fff", letterSpacing: "-0.03em", marginBottom: "4px" }}>$0.00 <span style={{ fontSize: "14px", color: "#06C755", fontWeight: "700" }}>USDC</span></p>
-        <p style={{ fontSize: "12px", color: "#555" }}>Complete tasks to earn rewards</p>
+        <p className="text-zinc-500 text-[10px] mt-4 font-medium">Complete tasks to earn rewards</p>
       </div>
 
-      <main style={{ padding: "0 24px" }}>
-        <div style={{ marginBottom: "20px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "900", color: "#111", letterSpacing: "-0.02em" }}>Available Tasks</h2>
-          <p style={{ fontSize: "12px", color: "#999", marginTop: "4px" }}>Powered by RapidoReach</p>
-        </div>
+      <div className="px-6">
+        <h2 className="text-xl font-bold mb-1">Available Tasks</h2>
+        <p className="text-zinc-400 text-[10px] mb-6 font-medium tracking-tight">Powered by RapidoReach</p>
 
-        <div style={{ display: "flex", gap: "8px", marginBottom: "24px", overflowX: "auto", paddingBottom: "4px" }}>
-          {tabs.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: "8px 18px", borderRadius: "99px", border: "none", cursor: "pointer",
-                fontSize: "11px", fontWeight: "800", letterSpacing: "0.1em", whiteSpace: "nowrap",
-                background: activeTab === tab ? "#111" : "#fff",
-                color: activeTab === tab ? "#fff" : "#999",
-                boxShadow: activeTab === tab ? "0 4px 12px rgba(0,0,0,0.2)" : "0 2px 6px rgba(0,0,0,0.06)",
-              }}
+        {/* 案件表示カード (ここに一気に案件が出るようにします) */}
+        <div className="space-y-4">
+          <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-zinc-100 relative overflow-hidden">
+            <div className="flex justify-between items-start mb-6">
+              <span className="bg-zinc-100 text-zinc-400 text-[9px] font-black px-3 py-1 rounded-full uppercase">Survey</span>
+              <span className="text-black text-xl font-black">$1.00+ <span className="text-[10px]">USDC</span></span>
+            </div>
+            
+            <h3 className="text-lg font-bold mb-2">Available Surveys</h3>
+            <p className="text-zinc-400 text-sm mb-8 leading-relaxed">複数のアンケートから選択して即座に報酬を獲得</p>
+            
+            <button 
+              onClick={() => { if(surveyUrl) window.location.href = surveyUrl; }}
+              className="w-full bg-[#1A1A1A] text-white py-4 rounded-2xl font-bold flex justify-center items-center gap-2 active:scale-95 transition-all"
             >
-              {tab}
+              案件リストを表示 <span className="text-xl">→</span>
             </button>
+          </div>
+
+          {/* ロックされている案件 (image 13再現) */}
+          {["Offer", "Video"].map((item) => (
+            <div key={item} className="bg-white/50 p-6 rounded-[2.5rem] border border-zinc-100 flex justify-between items-center opacity-60">
+              <div>
+                <span className="text-[9px] font-black text-zinc-300 uppercase">{item}</span>
+                <h4 className="font-bold text-zinc-400">Coming Soon</h4>
+              </div>
+              <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-xs">🔒</div>
+            </div>
           ))}
         </div>
+      </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          {(activeTab === "ALL" || activeTab === "SURVEY") && (
-            <div
-              className="card"
-              onClick={() => setShowSurvey(true)}
-              style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer", transition: "transform 0.15s ease" }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px" }}>
-                    <span style={{ fontSize: "10px", fontWeight: "800", color: "#555", letterSpacing: "0.1em" }}>SURVEY</span>
-                  </div>
-                  <span style={{ fontSize: "11px", color: "#bbb", fontWeight: "500" }}>RapidoReach</span>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <p style={{ fontSize: "22px", fontWeight: "900", color: "#111", letterSpacing: "-0.02em", lineHeight: 1 }}>$1.00+</p>
-                  <p style={{ fontSize: "10px", color: "#06C755", fontWeight: "700" }}>USDC</p>
-                </div>
-              </div>
-              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#111", marginBottom: "16px" }}>Available Surveys</h3>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "12px", color: "#999", fontWeight: "600" }}>複数のアンケートから選択</span>
-                <button style={{ background: "#111", color: "#fff", border: "none", borderRadius: "12px", padding: "8px 18px", fontSize: "12px", fontWeight: "700", cursor: "pointer" }}>
-                  Start →
-                </button>
-              </div>
-            </div>
-          )}
-
-          {(activeTab === "ALL" || activeTab === "OFFER") && (
-            <div style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", opacity: 0.5 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px", display: "inline-block", marginBottom: "10px" }}>
-                    <span style={{ fontSize: "10px", fontWeight: "800", color: "#555" }}>OFFER</span>
-                  </div>
-                  <p style={{ fontSize: "15px", fontWeight: "700", color: "#111" }}>Coming Soon</p>
-                </div>
-                <span style={{ fontSize: "20px" }}>🔒</span>
-              </div>
-            </div>
-          )}
-
-          {(activeTab === "ALL" || activeTab === "VIDEO") && (
-            <div style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", opacity: 0.5 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px", display: "inline-block", marginBottom: "10px" }}>
-                    <span style={{ fontSize: "10px", fontWeight: "800", color: "#555" }}>VIDEO</span>
-                  </div>
-                  <p style={{ fontSize: "15px", fontWeight: "700", color: "#111" }}>Coming Soon</p>
-                </div>
-                <span style={{ fontSize: "20px" }}>🔒</span>
-              </div>
-            </div>
-          )}
+      {/* フッターナビ (image 13再現) */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-zinc-100 px-8 py-4 flex justify-around">
+        <div className="flex flex-col items-center gap-1 text-black font-bold">
+          <span className="text-xl">📋</span>
+          <span className="text-[9px]">Tasks</span>
+          <div className="w-1 h-1 bg-black rounded-full mt-0.5"></div>
         </div>
-      </main>
-
-      <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1px solid #eee", padding: "12px 8px 24px", display: "flex", justifyContent: "space-around" }}>
-        {[
-          { icon: "📋", label: "Tasks" },
-          { icon: "🔍", label: "Search" },
-          { icon: "🕐", label: "History" },
-          { icon: "👤", label: "Profile" },
-        ].map(item => (
-          <button
-            key={item.label}
-            onClick={() => setActiveNav(item.label)}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", background: "none", border: "none", cursor: "pointer", padding: "4px 16px" }}
-          >
-            <span style={{ fontSize: "20px" }}>{item.icon}</span>
-            <span style={{ fontSize: "10px", fontWeight: "700", color: activeNav === item.label ? "#111" : "#bbb", letterSpacing: "0.05em" }}>{item.label}</span>
-            {activeNav === item.label && <div style={{ width: "4px", height: "4px", borderRadius: "50%", background: "#06C755" }} />}
-          </button>
-        ))}
+        <div className="flex flex-col items-center gap-1 text-zinc-300 font-bold">
+          <span className="text-xl">🔍</span>
+          <span className="text-[9px]">Search</span>
+        </div>
+        <div className="flex flex-col items-center gap-1 text-zinc-300 font-bold">
+          <span className="text-xl">🕒</span>
+          <span className="text-[9px]">History</span>
+        </div>
+        <div className="flex flex-col items-center gap-1 text-zinc-300 font-bold">
+          <span className="text-xl">👤</span>
+          <span className="text-[9px]">Profile</span>
+        </div>
       </nav>
     </div>
   );
