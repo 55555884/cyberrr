@@ -4,30 +4,28 @@ import crypto from 'crypto';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   
-  const rawId = searchParams.get('userId') || 'user_guest';
-  const gender = searchParams.get('gender') || ''; 
-  const birthYear = searchParams.get('birthYear') || '';
-  const zip = searchParams.get('zip') || '';
-  
-  const appId = process.env.RAPIDOREACH_APP_ID || 'PVnxv7sZMH2';
-  const appKey = process.env.RAPIDOREACH_APP_KEY; 
+  // ユーザーIDは固定または認証済みアドレスを1つに固定
+  const rawId = searchParams.get('userId') || 'user_official_001';
+  const appId = "PVnxv7sZMH2";
+  const appKey = process.env.RAPIDOREACH_APP_KEY; // Secret Key
 
-  if (!appKey) return NextResponse.json({ error: "Missing API Key" }, { status: 500 });
+  if (!appKey) return NextResponse.json({ error: "Config missing" }, { status: 500 });
 
-  // 署名の作成
-  const checksum = crypto.createHash('md5').update(`${rawId}-${appId}-${appKey}`).digest('hex');
+  // 1. 署名の生成 (この順序が1文字でも違うとBAN対象になります)
+  const hashString = `${rawId}-${appId}-${appKey}`;
+  const checksum = crypto.createHash('md5').update(hashString).digest('hex');
   
-  // RapidoReach オファーウォール基本URL
+  // 2. URL構築
   let finalUrl = `https://www.rapidoreach.com/ofw/?userId=${rawId}-${appId}-${checksum}`;
 
-  // 【最重要】初期入力をスキップさせるための変数名修正
-  // RapidoReachでは gender: 1(Male), 2(Female) / birth_year / zip を使用します
-  if (gender) {
-    const gCode = gender === '男性' ? '1' : gender === '女性' ? '2' : '0';
-    finalUrl += `&gender=${gCode}`;
-  }
+  // 3. 互換性の注入 (これを正確に送れば、画像13:12の入力画面をスキップできます)
+  const gender = searchParams.get('gender'); // '男性' or '女性'
+  const birthYear = searchParams.get('birthYear');
+  const zip = searchParams.get('zip');
+
+  if (gender) finalUrl += `&gender=${gender === '男性' ? '1' : '2'}`;
   if (birthYear) finalUrl += `&birth_year=${birthYear}`;
-  if (zip) finalUrl += `&zip=${zip.replace(/[^\d]/g, '')}`; // 数字のみ抽出
+  if (zip) finalUrl += `&zip=${zip.replace(/[^\d]/g, '')}`; // 数字のみ
 
   finalUrl += `&lang=jp&country=JP`;
 
