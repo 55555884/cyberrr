@@ -10,44 +10,47 @@ export default function TasksPage() {
   const scriptLoaded = useRef(false);
 
   const appId = "PVnxv7sZMH2";
-
   const userId = typeof window !== "undefined"
-    ? "user_" + (localStorage.getItem("worldid_verified") || "anonymous").slice(0, 10)
-    : "anonymous";
+    ? "user_" + (localStorage.getItem("worldid_verified") || "guest")
+    : "guest";
 
   useEffect(() => {
     if (showSurvey && !scriptLoaded.current) {
-      const container = document.getElementById("rapidoreach-offerwall");
-      if (!container) return;
-
-      const script = document.createElement("script");
-      script.src = "https://www.rapidoreach.com/ofw/rapidoreach-widget.min.js";
-      script.setAttribute("data-app-id", appId);
-      script.setAttribute("data-end-user-id", userId);
-      script.setAttribute("data-container", "#rapidoreach-offerwall");
-      script.setAttribute("data-height", "720px");
-      script.setAttribute("data-loader-text", "Finding surveys for you…");
-      script.async = true;
-      document.body.appendChild(script);
-      scriptLoaded.current = true;
+      setTimeout(() => {
+        const existing = document.querySelector('script[data-app-id]');
+        if (existing) existing.remove();
+        const script = document.createElement("script");
+        script.src = "https://www.rapidoreach.com/ofw/rapidoreach-widget.min.js";
+        script.setAttribute("data-app-id", appId);
+        script.setAttribute("data-end-user-id", userId);
+        script.setAttribute("data-container", "#rapidoreach-offerwall");
+        script.setAttribute("data-height", "100%");
+        script.setAttribute("data-loader-text", "Finding surveys for you…");
+        script.async = true;
+        document.body.appendChild(script);
+        scriptLoaded.current = true;
+      }, 100);
     }
   }, [showSurvey]);
 
   if (showSurvey) {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: "#ECECEC", fontFamily: "'DM Sans', sans-serif" }}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap');`}</style>
-        <div style={{ background: "#fff", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", position: "sticky", top: 0, zIndex: 10 }}>
+      <div style={{ minHeight: "100vh", backgroundColor: "#ECECEC", fontFamily: "'DM Sans', sans-serif", display: "flex", flexDirection: "column" }}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
+        <div style={{ background: "#fff", padding: "52px 20px 16px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
           <button
-            onClick={() => setShowSurvey(false)}
-            style={{ background: "#ECECEC", border: "none", borderRadius: "10px", padding: "8px 14px", fontWeight: "700", cursor: "pointer", fontSize: "14px" }}
+            onClick={() => { setShowSurvey(false); scriptLoaded.current = false; }}
+            style={{ background: "#ECECEC", border: "none", borderRadius: "10px", padding: "8px 14px", fontWeight: "700", cursor: "pointer", fontSize: "14px", color: "#111" }}
           >
             ← 戻る
           </button>
-          <span style={{ fontWeight: "800", fontSize: "15px", color: "#111" }}>アンケート一覧</span>
+          <span style={{ fontWeight: "900", fontSize: "16px", color: "#111" }}>アンケート一覧</span>
         </div>
-        <div style={{ padding: "20px" }}>
-          <div id="rapidoreach-offerwall" style={{ width: "100%", minHeight: "720px", borderRadius: "16px", overflow: "hidden" }} />
+        <div style={{ flex: 1, padding: "20px" }}>
+          <div
+            id="rapidoreach-offerwall"
+            style={{ width: "100%", minHeight: "700px", borderRadius: "20px", overflow: "hidden", background: "#fff", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+          />
         </div>
       </div>
     );
@@ -58,7 +61,6 @@ export default function TasksPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        .card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
         .card:active { transform: scale(0.97); }
       `}</style>
 
@@ -92,14 +94,8 @@ export default function TasksPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
-                padding: "8px 18px",
-                borderRadius: "99px",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "11px",
-                fontWeight: "800",
-                letterSpacing: "0.1em",
-                whiteSpace: "nowrap",
+                padding: "8px 18px", borderRadius: "99px", border: "none", cursor: "pointer",
+                fontSize: "11px", fontWeight: "800", letterSpacing: "0.1em", whiteSpace: "nowrap",
                 background: activeTab === tab ? "#111" : "#fff",
                 color: activeTab === tab ? "#fff" : "#999",
                 boxShadow: activeTab === tab ? "0 4px 12px rgba(0,0,0,0.2)" : "0 2px 6px rgba(0,0,0,0.06)",
@@ -115,7 +111,7 @@ export default function TasksPage() {
             <div
               className="card"
               onClick={() => setShowSurvey(true)}
-              style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer" }}
+              style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", cursor: "pointer", transition: "transform 0.15s ease" }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -139,21 +135,33 @@ export default function TasksPage() {
             </div>
           )}
 
-          {["OFFER", "VIDEO"].map(type => (
-            (activeTab === "ALL" || activeTab === type) && (
-              <div key={type} style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", opacity: 0.5 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px", display: "inline-block", marginBottom: "10px" }}>
-                      <span style={{ fontSize: "10px", fontWeight: "800", color: "#555" }}>{type}</span>
-                    </div>
-                    <p style={{ fontSize: "15px", fontWeight: "700", color: "#111" }}>Coming Soon</p>
+          {(activeTab === "ALL" || activeTab === "OFFER") && (
+            <div style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", opacity: 0.5 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px", display: "inline-block", marginBottom: "10px" }}>
+                    <span style={{ fontSize: "10px", fontWeight: "800", color: "#555" }}>OFFER</span>
                   </div>
-                  <span style={{ fontSize: "20px" }}>🔒</span>
+                  <p style={{ fontSize: "15px", fontWeight: "700", color: "#111" }}>Coming Soon</p>
                 </div>
+                <span style={{ fontSize: "20px" }}>🔒</span>
               </div>
-            )
-          ))}
+            </div>
+          )}
+
+          {(activeTab === "ALL" || activeTab === "VIDEO") && (
+            <div style={{ background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", opacity: 0.5 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ background: "#ECECEC", borderRadius: "10px", padding: "6px 10px", display: "inline-block", marginBottom: "10px" }}>
+                    <span style={{ fontSize: "10px", fontWeight: "800", color: "#555" }}>VIDEO</span>
+                  </div>
+                  <p style={{ fontSize: "15px", fontWeight: "700", color: "#111" }}>Coming Soon</p>
+                </div>
+                <span style={{ fontSize: "20px" }}>🔒</span>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
