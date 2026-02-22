@@ -2,12 +2,23 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MiniKit } from "@worldcoin/minikit-js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AuthPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // ?reset=1 でアクセスすると localStorage をクリアして初回状態に戻す
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reset") === "1") {
+      localStorage.removeItem("profile");
+      localStorage.removeItem("worldid_verified");
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
 
   const handleSignIn = async () => {
     setLoading(true);
