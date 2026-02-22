@@ -2,90 +2,74 @@
 import { useState, useEffect } from "react";
 
 export default function TasksPage() {
-  const [loading, setLoading] = useState(false);
+  const [showSurvey, setShowSurvey] = useState(false);
   const [surveyUrl, setSurveyUrl] = useState("");
 
   useEffect(() => {
-    // ページ読み込み時に署名済みURLを事前に取得しておく
-    async function prepareSurvey() {
+    async function prepareUrl() {
       const profile = JSON.parse(localStorage.getItem("profile") || "{}");
       const userId = localStorage.getItem("worldid_address") || "user_test";
-      
-      const res = await fetch(
-        `/api/rapidoreach-uid?userId=${userId}&gender=${profile.gender}&birthYear=${profile.birthYear}&zip=${profile.zip}`
-      );
+      // 署名URLを取得
+      const res = await fetch(`/api/rapidoreach-uid?userId=${userId}&gender=${profile.gender}&birthYear=${profile.birthYear}&zip=${profile.zip}`);
       const data = await res.json();
       if (data.url) setSurveyUrl(data.url);
     }
-    prepareSurvey();
+    prepareUrl();
   }, []);
 
+  // 案件画面（外部ブラウザに飛ばさない）
+  if (showSurvey && surveyUrl) {
+    return (
+      <div className="fixed inset-0 bg-white z-50 flex flex-col">
+        <div className="p-4 border-b flex justify-between items-center bg-white text-black">
+          <button onClick={() => setShowSurvey(false)} className="font-bold text-sm">← 戻る</button>
+          <span className="font-black text-xs">アンケート一覧</span>
+          <div className="w-10"></div>
+        </div>
+        <iframe src={surveyUrl} className="flex-1 w-full border-none" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#F5F5F7] text-black font-sans pb-24">
-      {/* 合計獲得額表示エリア (image 13のスタイル) */}
-      <div className="bg-[#1A1A1A] text-white p-8 rounded-b-[3rem] mb-8">
-        <p className="text-zinc-500 text-[10px] font-bold uppercase mb-2">Total Earned</p>
-        <div className="flex items-baseline gap-2">
-          <span className="text-4xl font-black">$0.00</span>
-          <span className="text-[#00ff00] font-bold text-sm">USDC</span>
-        </div>
-        <p className="text-zinc-500 text-[10px] mt-4 font-medium">Complete tasks to earn rewards</p>
-      </div>
+    <div className="min-h-screen bg-black text-white p-6 pb-32 font-sans">
+      <header className="flex justify-between items-center mb-10 pt-4">
+        <h1 className="text-3xl font-black italic tracking-tighter text-[#00ff00]">CYBERRR</h1>
+        <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center">👤</div>
+      </header>
 
-      <div className="px-6">
-        <h2 className="text-xl font-bold mb-1">Available Tasks</h2>
-        <p className="text-zinc-400 text-[10px] mb-6 font-medium tracking-tight">Powered by RapidoReach</p>
+      <h2 className="text-2xl font-black mb-6 uppercase tracking-widest">Available Tasks</h2>
 
-        {/* 案件表示カード (ここに一気に案件が出るようにします) */}
-        <div className="space-y-4">
-          <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-zinc-100 relative overflow-hidden">
-            <div className="flex justify-between items-start mb-6">
-              <span className="bg-zinc-100 text-zinc-400 text-[9px] font-black px-3 py-1 rounded-full uppercase">Survey</span>
-              <span className="text-black text-xl font-black">$1.00+ <span className="text-[10px]">USDC</span></span>
-            </div>
-            
-            <h3 className="text-lg font-bold mb-2">Available Surveys</h3>
-            <p className="text-zinc-400 text-sm mb-8 leading-relaxed">複数のアンケートから選択して即座に報酬を獲得</p>
-            
-            <button 
-              onClick={() => { if(surveyUrl) window.location.href = surveyUrl; }}
-              className="w-full bg-[#1A1A1A] text-white py-4 rounded-2xl font-bold flex justify-center items-center gap-2 active:scale-95 transition-all"
-            >
-              案件リストを表示 <span className="text-xl">→</span>
-            </button>
+      {/* 元のカードUIに戻しました */}
+      <div className="grid gap-5">
+        <div 
+          onClick={() => setShowSurvey(true)}
+          className="bg-zinc-900 border border-zinc-800 p-7 rounded-[2.5rem] relative active:scale-95 transition-all cursor-pointer"
+        >
+          <div className="flex justify-between items-start mb-6">
+            <span className="bg-[#00ff00]/10 text-[#00ff00] text-[10px] font-black px-3 py-1 rounded-full border border-[#00ff00]/20">SURVEY</span>
+            <span className="text-[#00ff00] text-2xl font-black">1.50+ <span className="text-[10px]">USDC</span></span>
           </div>
+          <h3 className="text-xl font-bold mb-2">RapidoReach プレミアムアンケート</h3>
+          <p className="text-zinc-500 text-sm mb-8 leading-relaxed">
+            プロフィールに最適化された案件を一覧表示します。
+          </p>
+          <div className="w-full bg-white text-black py-4 rounded-2xl font-black text-center text-sm">
+            ミッションを開始
+          </div>
+        </div>
 
-          {/* ロックされている案件 (image 13再現) */}
-          {["Offer", "Video"].map((item) => (
-            <div key={item} className="bg-white/50 p-6 rounded-[2.5rem] border border-zinc-100 flex justify-between items-center opacity-60">
-              <div>
-                <span className="text-[9px] font-black text-zinc-300 uppercase">{item}</span>
-                <h4 className="font-bold text-zinc-400">Coming Soon</h4>
-              </div>
-              <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-xs">🔒</div>
-            </div>
-          ))}
+        {/* Coming Soon カード */}
+        <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-[2rem] flex justify-between items-center opacity-40">
+          <span className="text-zinc-500 font-bold uppercase text-xs tracking-widest">OFFER / VIDEO</span>
+          <span className="text-zinc-600 font-black tracking-tighter uppercase text-xs italic">Coming Soon</span>
         </div>
       </div>
 
-      {/* フッターナビ (image 13再現) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-zinc-100 px-8 py-4 flex justify-around">
-        <div className="flex flex-col items-center gap-1 text-black font-bold">
-          <span className="text-xl">📋</span>
-          <span className="text-[9px]">Tasks</span>
-          <div className="w-1 h-1 bg-black rounded-full mt-0.5"></div>
-        </div>
-        <div className="flex flex-col items-center gap-1 text-zinc-300 font-bold">
-          <span className="text-xl">🔍</span>
-          <span className="text-[9px]">Search</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 text-zinc-300 font-bold">
-          <span className="text-xl">🕒</span>
-          <span className="text-[9px]">History</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 text-zinc-300 font-bold">
-          <span className="text-xl">👤</span>
-          <span className="text-[9px]">Profile</span>
+      <nav className="fixed bottom-8 left-6 right-6">
+        <div className="bg-zinc-900/90 backdrop-blur-3xl border border-zinc-800/50 p-2 rounded-full flex justify-around items-center shadow-2xl">
+          <button className="bg-[#00ff00] text-black px-8 py-3 rounded-full text-xs font-black">TASKS</button>
+          <button className="text-zinc-600 text-xs font-black px-4 py-3">PROFILE</button>
         </div>
       </nav>
     </div>
