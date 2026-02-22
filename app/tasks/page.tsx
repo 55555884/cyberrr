@@ -6,36 +6,19 @@ export default function TasksPage() {
   const [surveyUrl, setSurveyUrl] = useState("");
   const [loading, setLoading] = useState(true);
 
-    <div className="min-h-screen bg-[#ECECEC] text-[#111111] pb-40">
-      <div className="max-w-3xl mx-auto px-6 pt-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-extrabold mb-1 tracking-tight">Available Tasks</h2>
-          <p className="text-sm text-[#666666] font-semibold uppercase">Official RapidoReach Feed</p>
-        </div>
+  useEffect(() => {
     async function fetchUrl() {
       try {
-        <div className="max-w-3xl mx-auto px-6">
-        {/* Loading skeleton */}
-        {loading ? (
-          <div className="space-y-6">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="animate-pulse bg-white rounded-2xl shadow-sm p-6 mb-2">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="w-24 h-3 bg-gray-200 rounded-full"></div>
-                  <div className="w-16 h-5 bg-gray-200 rounded-full"></div>
-                </div>
-                <div className="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <>
-            {/* 🚀 本物の案件へ飛ばすメインカード */}
-            <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-zinc-100 mb-6">
-        const res = await fetch(`/api/rapidoreach-uid?userId=${uid}&gender=${p.gender}&birthYear=${p.birthYear}&zip=${p.zip}`);
+        const profileRaw = localStorage.getItem("profile");
+        const p = profileRaw ? JSON.parse(profileRaw) : {};
+        const uid = "user_cyberrr_001";
+        const res = await fetch(
+          `/api/rapidoreach-uid?userId=${uid}&gender=${p.gender ?? ""}&birthYear=${p.birthYear ?? ""}&zip=${p.zip ?? ""}`
+        );
         const data = await res.json();
-              <span className="text-black text-2xl font-black italic">$1.00+</span>
+        setSurveyUrl(data.url ?? "");
+      } catch {
+        setSurveyUrl("");
       } finally {
         setLoading(false);
       }
@@ -44,43 +27,78 @@ export default function TasksPage() {
   }, []);
 
   return (
-            className={`w-full py-5 rounded-2xl font-black text-sm shadow-xl transition-all ${loading ? 'bg-zinc-200 text-zinc-400' : 'bg-gradient-to-tr from-[#06C755] to-[#04a344] text-white active:scale-95'}`}
-      <div className="bg-[#ECECEC] text-[#111111] p-8 rounded-b-[3rem] mb-10 shadow-2xl">
-        <p className="text-[#666666] text-[10px] font-black uppercase mb-2">Total Earned</p>
-        <div className="flex items-baseline gap-2">
-          <span className="text-5xl font-black italic">$0.00</span>
+    <div style={{ backgroundColor: "#ECECEC", minHeight: "100vh", paddingBottom: "120px", color: "#111111" }}>
+
+      {/* ヘッダー */}
+      <div style={{ backgroundColor: "#ECECEC", padding: "32px 24px 20px" }}>
+        <p style={{ fontSize: "10px", fontWeight: 900, color: "#666666", letterSpacing: "0.12em", marginBottom: "6px" }}>TOTAL EARNED</p>
+        <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+          <span style={{ fontSize: "48px", fontWeight: 900, fontStyle: "italic", lineHeight: 1 }}>$0.00</span>
+          <span style={{ fontSize: "14px", fontWeight: 700, color: "#06C755" }}>USDC</span>
+        </div>
+      </div>
+
+      <div style={{ padding: "0 24px" }}>
+        <h2 style={{ fontSize: "22px", fontWeight: 900, fontStyle: "italic", letterSpacing: "-0.03em", marginBottom: "4px" }}>Available Tasks</h2>
+        <p style={{ fontSize: "10px", fontWeight: 700, color: "#777777", letterSpacing: "0.1em", marginBottom: "28px" }}>OFFICIAL RAPIDOREACH FEED</p>
+
+        {/* ローディングスケルトン */}
+        {loading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} style={{ backgroundColor: "#FFFFFF", borderRadius: "24px", padding: "24px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <div style={{ width: "64px", height: "12px", backgroundColor: "#E8E8E8", borderRadius: "99px" }} />
+                  <div style={{ width: "48px", height: "20px", backgroundColor: "#E8E8E8", borderRadius: "99px" }} />
+                </div>
+                <div style={{ height: "18px", backgroundColor: "#E8E8E8", borderRadius: "8px", width: "75%", marginBottom: "10px" }} />
+                <div style={{ height: "12px", backgroundColor: "#E8E8E8", borderRadius: "8px", width: "50%" }} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* メインカード */}
+            <div style={{ backgroundColor: "#FFFFFF", padding: "32px", borderRadius: "40px", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.04)", marginBottom: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                <span style={{ backgroundColor: "rgba(6,199,85,0.1)", color: "#06C755", fontSize: "9px", fontWeight: 900, padding: "4px 12px", borderRadius: "99px", letterSpacing: "0.1em" }}>ACTIVE</span>
+                <span style={{ fontSize: "24px", fontWeight: 900, fontStyle: "italic", color: "#111111" }}>$1.00+</span>
+              </div>
+              <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px", color: "#111111" }}>プレミアムアンケート</h3>
+              <p style={{ fontSize: "12px", color: "#999999", lineHeight: 1.7, marginBottom: "32px" }}>
+                プロフィールを自動連携済み。初期入力をスキップして直接案件を開始します。
+              </p>
+              <button
+                onClick={() => { if (surveyUrl) window.location.href = surveyUrl; }}
+                disabled={!surveyUrl}
+                style={{
+                  width: "100%",
+                  padding: "20px",
+                  borderRadius: "20px",
+                  border: "none",
+                  cursor: surveyUrl ? "pointer" : "default",
+                  background: surveyUrl ? "linear-gradient(135deg, #06C755, #04a344)" : "#E0E0E0",
+                  color: surveyUrl ? "#FFFFFF" : "#AAAAAA",
+                  fontSize: "13px",
+                  fontWeight: 900,
+                  letterSpacing: "0.04em",
+                  boxShadow: surveyUrl ? "0 8px 24px rgba(6,199,85,0.3)" : "none",
+                  transition: "all 0.2s",
+                }}
+              >
+                {surveyUrl ? "案件リストを表示する →" : "API CONNECTING..."}
+              </button>
+            </div>
+
+            {/* 説明テキスト */}
+            <p style={{ fontSize: "10px", color: "#AAAAAA", textAlign: "center", lineHeight: 1.7, padding: "0 16px" }}>
+              案件の報酬はRapidoReachの承認後、USDCにて即時送金されます。
+            </p>
           </>
         )}
       </div>
 
       <Navbar />
-          <span className="text-[#06C755] font-bold text-sm">USDC</span>
-        </div>
-      </div>
-
-      <div className="px-6">
-        <h2 className="text-2xl font-black mb-1 italic tracking-tighter">Available Tasks</h2>
-        <p className="text-[#777777] text-[10px] font-bold mb-8 uppercase">Official RapidoReach Feed</p>
-
-        {/* 🚀 本物の案件へ飛ばすメインカード */}
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-zinc-100 mb-6">
-          <div className="flex justify-between items-center mb-8">
-            <span className="bg-[#06C755]/10 text-[#06C755] text-[9px] font-black px-4 py-1 rounded-full">ACTIVE</span>
-            <span className="text-black text-2xl font-black italic">$1.00+</span>
-          </div>
-          <h3 className="text-xl font-bold mb-2">プレミアムアンケート</h3>
-          <p className="text-zinc-400 text-xs mb-10 leading-relaxed">
-            プロフィールを自動連携済み。初期入力をスキップして直接案件を開始します。
-          </p>
-          <button 
-            onClick={() => { if(surveyUrl) window.location.href = surveyUrl; }}
-            disabled={loading || !surveyUrl}
-            className={`w-full py-5 rounded-2xl font-black text-sm shadow-xl transition-all ${loading ? 'bg-zinc-200 text-zinc-400' : 'bg-gradient-to-tr from-[#06C755] to-[#04a344] text-white active:scale-95'}`}
-          >
-            {loading ? "API CONNECTING..." : "案件リストを表示する →"}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
