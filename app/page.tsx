@@ -8,7 +8,6 @@ export default function AuthPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [miniKitReady, setMiniKitReady] = useState(false);
 
   // ?reset=1 でアクセスすると localStorage をクリアして初回状態に戻す
   useEffect(() => {
@@ -21,30 +20,7 @@ export default function AuthPage() {
     }
   }, []);
 
-  // MiniKit の準備が整っているか確認
-  useEffect(() => {
-    const check = setInterval(() => {
-      if (MiniKit.isInstalled()) {
-        setMiniKitReady(true);
-        clearInterval(check);
-      }
-    }, 200);
-    // 3秒後に諦める（World App 外の場合）
-    const timeout = setTimeout(() => {
-      clearInterval(check);
-      setMiniKitReady(false);
-    }, 3000);
-    return () => {
-      clearInterval(check);
-      clearTimeout(timeout);
-    };
-  }, []);
-
   const handleSignIn = async () => {
-    if (!MiniKit.isInstalled()) {
-      setError("World App から開いてください / Please open via World App");
-      return;
-    }
     setLoading(true);
     setError("");
     try {
@@ -66,9 +42,8 @@ export default function AuthPage() {
         setError("認証がキャンセルされました。もう一度お試しください。");
       }
     } catch (e) {
-      console.error("Auth error:", e);
       const msg = e instanceof Error ? e.message : String(e);
-      setError(`認証エラー: ${msg}`);
+      setError(`エラー: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -107,13 +82,8 @@ export default function AuthPage() {
       </button>
 
       {error && (
-        <p style={{ color: "#FF3B30", fontSize: "12px", marginTop: "16px", textAlign: "center", maxWidth: "300px", lineHeight: 1.5 }}>{error}</p>
-      )}
-
-      {/* World App 外でのデバッグ用ステータス */}
-      {!miniKitReady && !loading && (
-        <p style={{ color: "#AAAAAA", fontSize: "10px", marginTop: "24px", textAlign: "center" }}>
-          World App で開いてください
+        <p style={{ color: "#FF3B30", fontSize: "12px", marginTop: "16px", textAlign: "center", maxWidth: "300px", lineHeight: 1.5 }}>
+          {error}
         </p>
       )}
 
