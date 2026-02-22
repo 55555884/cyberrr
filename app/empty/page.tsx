@@ -26,7 +26,7 @@ export default function Empty() {
             fontWeight: '600',
             border: 'none',
             cursor: 'pointer',
-            backgroundColor: i === 0 ? '#111111' : '#E0E0E0',
+            background: i === 0 ? 'linear-gradient(135deg, #06C755, #04a344)' : '#E0E0E0',
             color: i === 0 ? '#FFFFFF' : '#888888'
           }}>
             {tab}
@@ -42,7 +42,7 @@ export default function Empty() {
         <button style={{
           padding: '12px 28px',
           borderRadius: '999px',
-          backgroundColor: '#111111',
+          background: 'linear-gradient(135deg, #06C755, #04a344)',
           color: '#FFFFFF',
           fontSize: '13px',
           fontWeight: '600',
@@ -55,7 +55,7 @@ export default function Empty() {
 
       {/* エラー状態（参考用・下に配置） */}
       <div style={{padding: '0 16px'}}>
-        <div style={{backgroundColor: '#F5F5F5', borderRadius: '16px', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'}}>
+        <div style={{backgroundColor: '#FFFFFF', borderRadius: '16px', padding: '20px', boxShadow: '0 8px 30px rgba(17,17,17,0.06)', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'}}>
           <div style={{fontSize: '36px', marginBottom: '12px'}}>⚠️</div>
           <h3 style={{fontSize: '16px', fontWeight: 'bold', color: '#111111', marginBottom: '6px'}}>Something went wrong</h3>
           <p style={{fontSize: '12px', color: '#888888', marginBottom: '16px'}}>接続に問題が発生しました。<br/>もう一度お試しください。</p>

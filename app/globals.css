@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #ECECEC;
+  --foreground: #111111;
 }
 
 @theme inline {
@@ -14,8 +14,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ECECEC;
+    --foreground: #111111;
   }
 }
 
@@ -23,4 +23,29 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Common high-end card styles */
+.card {
+  background: #FFFFFF;
+  color: #111111;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(17,17,17,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Accent color */
+.accent { color: #06C755; }
+.accent-bg { background: #06C755; }
+
+/* Accent button */
+.btn-accent {
+  background: linear-gradient(135deg, #06C755, #04a344);
+  color: #ffffff;
+  border-radius: 999px;
+}
+
+.btn-disabled {
+  background: #E6E6E6;
+  color: #999999;
 }

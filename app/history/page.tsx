@@ -9,13 +9,13 @@ export default function HistoryPage() {
   ];
 
   return (
-    <div style={{ backgroundColor: "#F7F9FB", minHeight: "100vh", padding: "40px 20px" }}>
+    <div style={{ backgroundColor: "#ECECEC", minHeight: "100vh", padding: "40px 20px" }}>
       <h1 style={{ fontSize: "28px", fontWeight: "900", marginBottom: "30px" }}>HISTORY</h1>
       
       {/* 収益サマリー */}
-      <div style={{ backgroundColor: "#111", borderRadius: "24px", padding: "24px", color: "#FFF", marginBottom: "32px" }}>
-        <p style={{ fontSize: "14px", opacity: 0.7 }}>総獲得報酬</p>
-        <div style={{ fontSize: "36px", fontWeight: "900", color: "#06C755" }}>1.70 <span style={{ fontSize: "16px" }}>USDC</span></div>
+      <div style={{ backgroundColor: "#FFFFFF", borderRadius: "24px", padding: "24px", color: "#111111", marginBottom: "32px", boxShadow: '0 8px 30px rgba(17,17,17,0.06)', border: '1px solid rgba(0,0,0,0.06)'}}>
+        <p style={{ fontSize: "14px", color: '#666666' }}>総獲得報酬</p>
+        <div style={{ fontSize: "36px", fontWeight: "900", color: "#06C755" }}>1.70 <span style={{ fontSize: "16px", color: '#111111' }}>USDC</span></div>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
