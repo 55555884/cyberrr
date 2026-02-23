@@ -51,7 +51,7 @@ export default function TasksPage() {
       {/* ── アプリ内 iframe オーバーレイ ── */}
       {showSurvey && (
         <div style={{
-          position: "fixed", inset: 0, zIndex: 1000,
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000,
           display: "flex", flexDirection: "column",
           backgroundColor: "#000",
         }}>

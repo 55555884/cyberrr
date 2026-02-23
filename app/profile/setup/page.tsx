@@ -73,9 +73,9 @@ export default function ProfileSetup() {
     width: "100%",
     padding: "14px 16px",
     borderRadius: "12px",
-    background: "#FFFFFF",
-    border: "2px solid #E6E6E6",
-    color: "#111111",
+    background: "#141414",
+    border: "2px solid #222222",
+    color: "#FFFFFF",
     fontSize: "14px",
     boxSizing: "border-box" as const,
     outline: "none",
@@ -108,15 +108,15 @@ export default function ProfileSetup() {
       <div style={{ marginBottom: "32px" }}>
         <p style={{ fontSize: "13px", color: "#888", marginBottom: "12px" }}>生年月日</p>
         <div style={{ display: "flex", gap: "10px" }}>
-          <select value={birthYear} onChange={e => setBirthYear(e.target.value)} style={{ flex: 2, padding: "14px", borderRadius: "12px", background: "#FFFFFF", border: "2px solid #E6E6E6", color: birthYear ? "#111111" : "#777777", fontSize: "14px" }}>
+          <select value={birthYear} onChange={e => setBirthYear(e.target.value)} style={{ flex: 2, padding: "14px", borderRadius: "12px", background: "#141414", border: "2px solid #222222", color: birthYear ? "#FFFFFF" : "#555555", fontSize: "14px" }}>
             <option value="">年</option>
             {years.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
-          <select value={birthMonth} onChange={e => setBirthMonth(e.target.value)} style={{ flex: 1, padding: "14px", borderRadius: "12px", background: "#FFFFFF", border: "2px solid #E6E6E6", color: birthMonth ? "#111111" : "#777777", fontSize: "14px" }}>
+          <select value={birthMonth} onChange={e => setBirthMonth(e.target.value)} style={{ flex: 1, padding: "14px", borderRadius: "12px", background: "#141414", border: "2px solid #222222", color: birthMonth ? "#FFFFFF" : "#555555", fontSize: "14px" }}>
             <option value="">月</option>
             {months.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
-          <select value={birthDay} onChange={e => setBirthDay(e.target.value)} style={{ flex: 1, padding: "14px", borderRadius: "12px", background: "#FFFFFF", border: "2px solid #E6E6E6", color: birthDay ? "#111111" : "#777777", fontSize: "14px" }}>
+          <select value={birthDay} onChange={e => setBirthDay(e.target.value)} style={{ flex: 1, padding: "14px", borderRadius: "12px", background: "#141414", border: "2px solid #222222", color: birthDay ? "#FFFFFF" : "#555555", fontSize: "14px" }}>
             <option value="">日</option>
             {days.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
@@ -152,7 +152,7 @@ export default function ProfileSetup() {
       {/* 国 */}
       <div style={{ marginBottom: "32px" }}>
         <p style={{ fontSize: "13px", color: "#666666", marginBottom: "12px" }}>国</p>
-        <select value={country} onChange={e => setCountry(e.target.value)} style={{ width: "100%", padding: "14px", borderRadius: "12px", background: "#FFFFFF", border: "2px solid #E6E6E6", color: "#111111", fontSize: "14px" }}>
+        <select value={country} onChange={e => setCountry(e.target.value)} style={{ width: "100%", padding: "14px", borderRadius: "12px", background: "#141414", border: "2px solid #222222", color: "#FFFFFF", fontSize: "14px" }}>
           {COUNTRIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
         </select>
       </div>

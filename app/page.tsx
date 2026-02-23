@@ -17,8 +17,18 @@ export default function AuthPage() {
       localStorage.removeItem("profile");
       localStorage.removeItem("worldid_verified");
       window.history.replaceState({}, "", "/");
+      return;
     }
-  }, []);
+    // World App 内 = 認証済みとみなして自動ルーティング
+    if (MiniKit.isInstalled()) {
+      const profile = localStorage.getItem("profile");
+      if (profile) {
+        router.replace("/tasks");
+      } else {
+        router.replace("/profile/setup");
+      }
+    }
+  }, [router]);
 
   const handleSignIn = async () => {
     setLoading(true);
