@@ -3,22 +3,36 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import ProfileGuard from "@/components/ProfileGuard";
 
+interface Profile {
+  gender?: string;
+  birthYear?: string;
+  birthMonth?: string;
+  birthDay?: string;
+  zipCode?: string;
+  city?: string;
+  country?: string;
+}
+
 export default function TasksPage() {
   const [surveyUrl, setSurveyUrl] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showSurvey, setShowSurvey] = useState(false);
 
   useEffect(() => {
     async function fetchUrl() {
       try {
         const profileRaw = localStorage.getItem("profile");
-        const p: { gender?: string; birthYear?: string; zip?: string } =
-          profileRaw ? JSON.parse(profileRaw) : {};
+        const p: Profile = profileRaw ? JSON.parse(profileRaw) : {};
         const uid = "user_cyberrr_001";
         const params = new URLSearchParams({
-          userId: uid,
-          gender: p.gender ?? "",
-          birthYear: p.birthYear ?? "",
-          zip: p.zip ?? "",
+          userId:     uid,
+          gender:     p.gender     ?? "",
+          birthYear:  p.birthYear  ?? "",
+          birthMonth: p.birthMonth ?? "",
+          birthDay:   p.birthDay   ?? "",
+          zipCode:    p.zipCode    ?? "1000001",
+          city:       p.city       ?? "Tokyo",
+          country:    p.country    ?? "JP",
         });
         const res = await fetch(`/api/rapidoreach-uid?${params}`);
         const data = await res.json();
@@ -34,10 +48,43 @@ export default function TasksPage() {
 
   return (
     <ProfileGuard>
+      {/* ── アプリ内 iframe オーバーレイ ── */}
+      {showSurvey && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          display: "flex", flexDirection: "column",
+          backgroundColor: "#000",
+        }}>
+          {/* ヘッダーバー */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: "12px",
+            padding: "12px 16px",
+            backgroundColor: "#111111", flexShrink: 0,
+          }}>
+            <button
+              onClick={() => setShowSurvey(false)}
+              style={{ background: "none", border: "none", color: "#FFFFFF", fontSize: "20px", cursor: "pointer", lineHeight: 1 }}
+            >
+              ←
+            </button>
+            <span style={{ color: "#FFFFFF", fontSize: "13px", fontWeight: 700 }}>RapidoReach Survey</span>
+          </div>
+
+          {/* iframe 本体 */}
+          <iframe
+            src={surveyUrl}
+            style={{ flex: 1, width: "100%", border: "none" }}
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      )}
+
+      {/* ── タスク一覧画面 ── */}
       <div style={{ backgroundColor: "#ECECEC", minHeight: "100vh", paddingBottom: "120px", color: "#111111" }}>
 
         {/* ヘッダー */}
-        <div style={{ backgroundColor: "#ECECEC", padding: "32px 24px 20px" }}>
+        <div style={{ padding: "32px 24px 20px" }}>
           <p style={{ fontSize: "10px", fontWeight: 900, color: "#666666", letterSpacing: "0.12em", marginBottom: "6px" }}>TOTAL EARNED</p>
           <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
             <span style={{ fontSize: "48px", fontWeight: 900, fontStyle: "italic", lineHeight: 1 }}>$0.00</span>
@@ -76,19 +123,14 @@ export default function TasksPage() {
                   プロフィールを自動連携済み。初期入力をスキップして直接案件を開始します。
                 </p>
                 <button
-                  onClick={() => { if (surveyUrl) window.location.href = surveyUrl; }}
+                  onClick={() => { if (surveyUrl) setShowSurvey(true); }}
                   disabled={!surveyUrl}
                   style={{
-                    width: "100%",
-                    padding: "20px",
-                    borderRadius: "20px",
-                    border: "none",
+                    width: "100%", padding: "20px", borderRadius: "20px", border: "none",
                     cursor: surveyUrl ? "pointer" : "default",
                     background: surveyUrl ? "linear-gradient(135deg, #06C755, #04a344)" : "#E0E0E0",
                     color: surveyUrl ? "#FFFFFF" : "#AAAAAA",
-                    fontSize: "13px",
-                    fontWeight: 900,
-                    letterSpacing: "0.04em",
+                    fontSize: "13px", fontWeight: 900, letterSpacing: "0.04em",
                     boxShadow: surveyUrl ? "0 8px 24px rgba(6,199,85,0.3)" : "none",
                     transition: "all 0.2s",
                   }}

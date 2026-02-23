@@ -1,33 +1,57 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 
+const GENDER_MAP: Record<string, string> = {
+  '男性': 'male',
+  '女性': 'female',
+  'その他': 'other',
+};
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  
-  // ユーザーIDは固定または認証済みアドレスを1つに固定
-  const rawId = searchParams.get('userId') || 'user_official_001';
-  const appId = "PVnxv7sZMH2";
-  const appKey = process.env.RAPIDOREACH_APP_KEY; // Secret Key
+
+  const rawId   = searchParams.get('userId')     || 'user_official_001';
+  const appId   = "PVnxv7sZMH2";
+  const appKey  = process.env.RAPIDOREACH_APP_KEY;
 
   if (!appKey) return NextResponse.json({ error: "Config missing" }, { status: 500 });
 
-  // 1. 署名の生成 (この順序が1文字でも違うとBAN対象になります)
-  const hashString = `${rawId}-${appId}-${appKey}`;
-  const checksum = crypto.createHash('md5').update(hashString).digest('hex');
-  
-  // 2. URL構築
-  let finalUrl = `https://www.rapidoreach.com/ofw/?userId=${rawId}-${appId}-${checksum}`;
+  // UID 生成（チェックサム方式）
+  const checksum = crypto.createHash('md5')
+    .update(`${rawId}-${appId}-${appKey}`)
+    .digest('hex');
+  const uid = `${rawId}-${appId}-${checksum}`;
 
-  // 3. 互換性の注入 (これを正確に送れば、画像13:12の入力画面をスキップできます)
-  const gender = searchParams.get('gender'); // '男性' or '女性'
-  const birthYear = searchParams.get('birthYear');
-  const zip = searchParams.get('zip');
+  // プロフィールパラメータ受け取り
+  const genderRaw  = searchParams.get('gender')     ?? '';
+  const birthYear  = searchParams.get('birthYear')  ?? '';
+  const birthMonth = searchParams.get('birthMonth') ?? '';
+  const birthDay   = searchParams.get('birthDay')   ?? '';
+  const zipCode    = searchParams.get('zipCode')    ?? '1000001';
+  const city       = searchParams.get('city')       ?? 'Tokyo';
+  const country    = searchParams.get('country')    ?? 'JP';
 
-  if (gender) finalUrl += `&gender=${gender === '男性' ? '1' : '2'}`;
-  if (birthYear) finalUrl += `&birth_year=${birthYear}`;
-  if (zip) finalUrl += `&zip=${zip.replace(/[^\d]/g, '')}`; // 数字のみ
+  // gender → male / female / other
+  const gender = GENDER_MAP[genderRaw] ?? (genderRaw || undefined);
 
-  finalUrl += `&lang=jp&country=JP`;
+  // dob → YYYY-MM-DD
+  const dob = birthYear && birthMonth && birthDay
+    ? `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`
+    : undefined;
+
+  // zip → 数字のみ（例: 1000001）
+  const zip = zipCode.replace(/[^\d]/g, '') || '1000001';
+
+  // RapidoReach URL 構築
+  const qs = new URLSearchParams({ userId: uid });
+  if (gender) qs.set('gender', gender);
+  if (dob)    qs.set('dob', dob);
+  qs.set('zip',     zip);
+  qs.set('city',    city || 'Tokyo');
+  qs.set('country', country || 'JP');
+  qs.set('lang',    'jp');
+
+  const finalUrl = `https://www.rapidoreach.com/ofw/?${qs.toString()}`;
 
   return NextResponse.json({ url: finalUrl });
 }
