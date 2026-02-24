@@ -1,3 +1,6 @@
+// ProfileGuardコンポーネント：認証とプロフィール入力を保護するガード
+// World ID認証済み＋プロフィール完了済みのユーザーのみコンテンツを表示する
+
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -8,14 +11,20 @@ export default function ProfileGuard({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const verified = localStorage.getItem("worldid_verified");
+    // World ID認証済みユーザーIDを確認する
+    const userId = localStorage.getItem("worldid_user_id");
+    // プロフィール入力済みフラグを確認する
+    const profileCompleted = localStorage.getItem("worldid_profile_completed");
+    // localStorageのプロフィールキャッシュを確認する
     const profile = localStorage.getItem("profile");
 
-    if (!verified) {
+    if (!userId) {
+      // 未認証の場合はトップページへリダイレクト
       router.replace("/");
       return;
     }
-    if (!profile) {
+    if (profileCompleted !== "true" || !profile) {
+      // プロフィール未完了の場合はプロフィール入力ページへリダイレクト
       router.replace("/profile/setup");
       return;
     }
@@ -33,3 +42,4 @@ export default function ProfileGuard({ children }: { children: React.ReactNode }
 
   return <>{children}</>;
 }
+
