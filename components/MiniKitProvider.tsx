@@ -1,16 +1,22 @@
 "use client";
 import { ReactNode, useEffect } from "react";
-import { initializeMiniKit } from "@/lib/minikit-utils";
+import { initializeMiniKit, isInWorldAppMiniapp } from "@/lib/minikit-utils";
 
 export default function MiniKitProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
-    // MiniKit を初期化する（World App miniapp WebView 内でのみ有効）
-    // initializeMiniKit() は内部でエラーハンドリングを行うため、ここでは結果を確認するだけ
-    const initialized = initializeMiniKit();
+    // World App miniapp 環境確認
+    if (!isInWorldAppMiniapp()) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[MiniKitProvider] World App miniapp 環境で実行してください");
+      }
+      return;
+    }
 
-    // 開発環境での初期化結果をログ出力する
+    // MiniKit 初期化（複数回実行されても安全）
+    const result = initializeMiniKit();
+
     if (process.env.NODE_ENV === "development") {
-      console.log("[MiniKitProvider] 初期化結果:", initialized ? "成功" : "失敗（World App 外）");
+      console.log("[MiniKitProvider] 初期化結果:", result ? "✅ 成功" : "❌ 失敗");
     }
   }, []);
 
