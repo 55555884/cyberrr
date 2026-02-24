@@ -6,6 +6,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MiniKit, VerificationLevel, ISuccessResult } from "@worldcoin/minikit-js";
 import { WORLD_ID_ACTION } from "@/lib/config";
+import { isMiniKitReady, getMiniKitErrorMessage } from "@/lib/minikit-utils";
+import { saveSession, hasValidSession, getSession } from "@/lib/session-manager";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -13,8 +15,29 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   // エラーメッセージの状態
   const [error, setError] = useState("");
+  // 自動ログインチェックボックスの状態（デフォルト: オフ）
+  const [autoLogin, setAutoLogin] = useState(false);
+  // MiniKit が準備できているかどうかの状態（クライアントサイドのみ）
+  const [miniKitReady, setMiniKitReady] = useState(false);
 
   useEffect(() => {
+    // クライアントサイドで MiniKit の状態を確認する
+    setMiniKitReady(isMiniKitReady());
+
+    // 自動ログインセッションが有効な場合は自動でリダイレクトする
+    if (hasValidSession()) {
+      const session = getSession();
+      if (session) {
+        // セッション有効：プロフィール完了状態に応じてリダイレクト
+        if (session.profileCompleted) {
+          router.replace("/tasks");
+        } else {
+          router.replace("/profile/setup");
+        }
+        return;
+      }
+    }
+
     // MiniKitがインストール済み（World App内で開いている）の場合
     // すでに認証済みかどうかを確認してリダイレクトする
     if (typeof window !== "undefined" && MiniKit.isInstalled()) {
@@ -34,8 +57,8 @@ export default function AuthPage() {
   // World ID認証を実行する
   const handleVerify = useCallback(async () => {
     // MiniKitが利用できない（World App外でのアクセス）場合はエラー
-    if (!MiniKit.isInstalled()) {
-      setError("World Appで開いてください");
+    if (!isMiniKitReady()) {
+      setError(getMiniKitErrorMessage());
       return;
     }
 
@@ -74,12 +97,8 @@ export default function AuthPage() {
         return;
       }
 
-      // 認証成功：ユーザー情報をlocalStorageに保存する
-      localStorage.setItem("worldid_user_id", verifyData.user_id);
-      localStorage.setItem(
-        "worldid_profile_completed",
-        String(verifyData.profile_completed)
-      );
+      // 認証成功：セッション情報を保存する（自動ログイン設定を含む）
+      saveSession(verifyData.user_id, verifyData.profile_completed, autoLogin);
 
       // プロフィール完了状態に応じてリダイレクト
       if (verifyData.profile_completed) {
@@ -93,7 +112,14 @@ export default function AuthPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, [router, autoLogin]);
+
+  // エラー状態をリセットしてリトライする
+  const handleRetry = useCallback(() => {
+    // エラーをクリアして再度 MiniKit の状態を確認する
+    setError("");
+    setMiniKitReady(isMiniKitReady());
+  }, []);
 
   return (
     <div
@@ -125,8 +151,8 @@ export default function AuthPage() {
         Earn USDC with surveys
       </p>
 
-      {/* World App以外でのアクセス時のメッセージ */}
-      {typeof window !== "undefined" && !MiniKit.isInstalled() && !isLoading && (
+      {/* World App以外でのアクセス時の詳細メッセージ */}
+      {!miniKitReady && !isLoading && (
         <div
           style={{
             backgroundColor: "#FFF3CD",
@@ -137,8 +163,15 @@ export default function AuthPage() {
             textAlign: "center",
           }}
         >
-          <p style={{ fontSize: "13px", color: "#856404", margin: 0 }}>
-            このアプリはWorld Appで開いてください
+          {/* MiniKit が見つからない場合の説明メッセージ */}
+          <p style={{ fontSize: "13px", color: "#856404", margin: "0 0 8px 0", fontWeight: 600 }}>
+            ❌ MiniKit が World App に見つかりません
+          </p>
+          <p style={{ fontSize: "12px", color: "#856404", margin: "0 0 4px 0" }}>
+            → World App 内でこのアプリを開いてください
+          </p>
+          <p style={{ fontSize: "12px", color: "#856404", margin: 0 }}>
+            → World App が最新バージョンか確認してください
           </p>
         </div>
       )}
@@ -155,7 +188,22 @@ export default function AuthPage() {
             textAlign: "center",
           }}
         >
-          <p style={{ fontSize: "13px", color: "#CC0000", margin: 0 }}>{error}</p>
+          <p style={{ fontSize: "13px", color: "#CC0000", margin: "0 0 8px 0" }}>{error}</p>
+          {/* リトライボタン：エラー発生後に再試行できる */}
+          <button
+            onClick={handleRetry}
+            style={{
+              fontSize: "12px",
+              color: "#CC0000",
+              background: "none",
+              border: "1px solid #CC0000",
+              borderRadius: "999px",
+              padding: "4px 12px",
+              cursor: "pointer",
+            }}
+          >
+            リトライ
+          </button>
         </div>
       )}
 
@@ -198,6 +246,27 @@ export default function AuthPage() {
         )}
         {isLoading ? "確認中..." : "🌍 World IDで始める"}
       </button>
+
+      {/* 自動ログインチェックボックス：次回から自動ログインするか選択できる */}
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          marginTop: "16px",
+          fontSize: "13px",
+          color: "#555555",
+          cursor: "pointer",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={autoLogin}
+          onChange={(e) => setAutoLogin(e.target.checked)}
+          style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#06C755" }}
+        />
+        次回から自動ログインする
+      </label>
 
       {/* 説明テキスト */}
       <p
