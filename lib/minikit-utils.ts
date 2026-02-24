@@ -2,6 +2,7 @@
 // MiniKit SDK の初期化・状態確認・エラーハンドリングをサポートする
 
 import { MiniKit } from "@worldcoin/minikit-js";
+import { WORLD_APP_ID } from "@/lib/config";
 
 /**
  * World App miniapp 環境を検出する
@@ -41,6 +42,13 @@ export function initializeMiniKit(): boolean {
     // World App miniapp 環境では app_id を指定しない
     // MiniKit.install() は miniapp WebView 内でのみ呼び出す
     const installResult = MiniKit.install();
+
+    // install() 後に appId を設定する（各コマンド実行時に利用される）
+    if (WORLD_APP_ID) {
+      MiniKit.appId = WORLD_APP_ID;
+    } else {
+      console.warn("[MiniKit] WORLD_APP_ID が設定されていません。verify() コマンドが正常に動作しない可能性があります。");
+    }
 
     if (process.env.NODE_ENV === "development") {
       console.log("[MiniKit] install() 実行後:", {
