@@ -5,10 +5,6 @@ import { MiniKit } from "@worldcoin/minikit-js";
 import { WORLD_APP_ID } from "@/lib/config";
 
 /**
-<<<<<<< HEAD
- * MiniKit を初期化する
- * エラーが発生しても例外をスローせず、結果を返す
-=======
  * World App miniapp 環境を検出する
  */
 export function isInWorldAppMiniapp(): boolean {
@@ -31,25 +27,10 @@ export function isInWorldAppMiniapp(): boolean {
  * 4. MiniKit の ready 状態を確認
  * 5. エラー時は詳細ログ
  *
->>>>>>> 5c2490c1d164d87e390de328b032a2f0b87df430
  * @returns 初期化成功なら true、失敗なら false
  */
 export function initializeMiniKit(): boolean {
   try {
-<<<<<<< HEAD
-    console.log("=== MiniKit 初期化デバッグ ===");
-    console.log("1. WORLD_APP_ID:", WORLD_APP_ID);
-    console.log("2. typeof WORLD_APP_ID:", typeof WORLD_APP_ID);
-    console.log("3. MiniKit.install() 前:", MiniKit.isInstalled());
-    
-    // ここが問題の行
-    console.log("4. MiniKit.install(" + WORLD_APP_ID + ") を呼び出します");
-    MiniKit.install(WORLD_APP_ID);
-    console.log("5. MiniKit.install() 呼び出し完了");
-    
-    console.log("6. MiniKit.install() 後:", MiniKit.isInstalled());
-    
-=======
     // MiniKit がすでにインストール済みか確認
     if (MiniKit.isInstalled()) {
       if (process.env.NODE_ENV === "development") {
@@ -69,7 +50,6 @@ export function initializeMiniKit(): boolean {
       console.warn("[MiniKit] WORLD_APP_ID が設定されていません。verify() コマンドが正常に動作しない可能性があります。");
     }
 
->>>>>>> 5c2490c1d164d87e390de328b032a2f0b87df430
     if (process.env.NODE_ENV === "development") {
       console.log("[MiniKit] install() 実行後:", {
         result: installResult,
@@ -87,10 +67,6 @@ export function initializeMiniKit(): boolean {
     console.log("[MiniKit] ✅ 初期化成功");
     return true;
   } catch (error) {
-<<<<<<< HEAD
-    console.error("[MiniKit] 初期化エラー:", error);
-    console.error("[MiniKit] エラースタック:", (error as Error).stack);
-=======
     // 初期化エラーの詳細をログ出力する
     console.error("[MiniKit] 初期化エラー詳細:", {
       error: error instanceof Error ? error.message : String(error),
@@ -98,7 +74,6 @@ export function initializeMiniKit(): boolean {
       timestamp: new Date().toISOString(),
       isWorldApp: (window as unknown as Record<string, unknown>).__WORLD_APP__,
     });
->>>>>>> 5c2490c1d164d87e390de328b032a2f0b87df430
     return false;
   }
 }
@@ -123,11 +98,7 @@ export function isMiniKitReady(): boolean {
  */
 export function getMiniKitErrorMessage(): string {
   if (process.env.NODE_ENV === "development") {
-<<<<<<< HEAD
-    return "開発環境: World App 外で実行中です";
-=======
     return "World App miniapp 環境で実行してください";
->>>>>>> 5c2490c1d164d87e390de328b032a2f0b87df430
   }
   return "World App 内でこのアプリを開いてください";
 }
