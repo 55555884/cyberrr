@@ -5,6 +5,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MiniKit, VerificationLevel, ISuccessResult } from "@worldcoin/minikit-js";
+
 import { WORLD_ID_ACTION } from "@/lib/config";
 import { isMiniKitReady, getMiniKitErrorMessage } from "@/lib/minikit-utils";
 import { saveSession, hasValidSession, getSession } from "@/lib/session-manager";
@@ -40,7 +41,7 @@ export default function AuthPage() {
 
     // MiniKitがインストール済み（World App内で開いている）の場合
     // すでに認証済みかどうかを確認してリダイレクトする
-    if (typeof window !== "undefined" && MiniKit.isInstalled()) {
+    if (isMiniKitReady()) {
       const userId = localStorage.getItem("worldid_user_id");
       const profileCompleted = localStorage.getItem("worldid_profile_completed");
 
